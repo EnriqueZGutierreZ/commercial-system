@@ -1,0 +1,76 @@
+.orden-compra-view{
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+.orden-compra-view .vaadin-split-layout {
+    width: 100%;
+    height: 100%;
+}
+.orden-compra-view .vaadin-grid {
+    height: 100%;
+}
+.orden-compra-view .editor-layout {
+    display: flex;
+    flex-direction: column;
+    width: 400px;
+}
+.orden-compra-view .vaadin-horizontal-layout{
+    display: flex;
+    flex-direction: row;
+    width: 400px;
+}
+.orden-compra-view .search {
+    align-content: center;
+    width: auto;
+    display: flex;
+    flex-wrap: wrap;
+    padding: 10px;
+    align-items: center;
+}
+
+.orden-compra-view .editor {
+    flex-grow: 1;
+    padding: var(--lumo-space-l);
+}
+.orden-compra-view .button-layout {
+    width: 100%;
+    flex-wrap: wrap;
+    background-color: var(--lumo-contrast-5pct);
+    padding-bottom: var(--lumo-space-s);
+    padding-top: var(--lumo-space-s);
+    padding-left: var(--lumo-space-l);
+    padding-right: var(--lumo-space-l);
+    gap: var(--lumo-space-m);
+}
+.orden-compra-view .grid-wrapper {
+    width: 100%;
+    align-items: center;
+    align-content: end;
+}
+.orden-compra-view .grilla {
+    margin: 10px;
+}
+/* Estilo general del layout del editor */
+.editor-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Espaciado entre elementos */
+    padding: 5px; /* Padding alrededor del contenido */
+}
+
+/* Estilos para las etiquetas de sección */
+.header-label, .detail-label {
+    font-size: 20px; /* Tamaño de fuente para las etiquetas */
+    font-weight: bold; /* Hacer la fuente más gruesa */
+    margin-bottom: 5px; /* Espaciado debajo de la etiqueta */
+    color: #333; /* Color del texto de la etiqueta */
+}
+
+/* Estilos para los formularios de cabecera y detalle */
+.header-form-layout, .detail-form-layout {
+    border: 1px solid #ccc; /* Borde alrededor del formulario */
+    border-radius: 8px; /* Bordes redondeados */
+    padding: 20px; /* Padding dentro del formulario */
+    background-color: #f9f9f9; /* Color de fondo */
+}

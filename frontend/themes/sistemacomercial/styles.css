@@ -1,0 +1,61 @@
+@import url('./main-layout.css');
+@import url('./views/grillaporsifunciona-view.css');
+@import url('./views/reportes-view.css');
+@import url('./views/persona-view.css');
+@import url('./views/roles-view.css');
+@import url('./views/usuario-view.css');
+@import url('./views/kardex-view.css');
+@import url('./views/empresa-view.css');
+@import url('./views/orden-regularizacion-view.css');
+@import url('./views/orden-compra-view.css');
+@import url('./views/editar-tabla-view.css');
+@import url('./views/colaboracion-view.css');
+@import url('./views/form-credit-card-view.css');
+@import url('./views/chat-e-view.css');
+@import url('./views/galeria-imagenes-view.css');
+
+
+
+.login-rich-content {
+  /*background-image: url("https://t3.ftcdn.net/jpg/02/38/16/94/360_F_238169477_Daonex5XsbOWLdcL0x8IcQ91RCJGubDy.jpg"); */
+  background-image: url("./img/misti2.svg");;
+  background-position: center;
+  background-size: cover;
+  display: flex;
+  height: 100vh;
+}
+.login-rich-content vaadin-login-form {
+  align-items: center;
+  display: flex;
+  max-width: 300px;
+}
+.login-rich-content vaadin-login-form-wrapper {
+  background-image: none;
+}
+/*estilos persona*/
+.tophl {
+  align-content: center;
+  width: auto;
+  display: flex;
+  flex-wrap: wrap;
+  padding: 10px;
+  align-items: center;
+}
+/* Estilo por defecto para pantallas grandes */
+.toggle-button {
+  display: none; /* Ocultar el botón en pantallas grandes */
+}
+/* Estilos para pantallas pequeñas */
+@media (max-width: 480px) {
+  .toggle-button {
+    display: block; /* Mostrar el botón en pantallas pequeñas */
+  }
+  .tophl {
+    display: none; /* Ocultar tophl inicialmente en pantallas pequeñas */
+  }
+  .tophl-visible {
+    display: block; /* O 'flex', dependiendo de tu layout */
+  }
+
+}
+

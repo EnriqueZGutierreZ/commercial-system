@@ -1,0 +1,53 @@
+.persona-view{
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+.persona-view .vaadin-split-layout {
+    width: 100%;
+    height: 100%;
+}
+.persona-view .vaadin-grid {
+    height: 100%;
+}
+.persona-view .editor-layout {
+    display: flex;
+    flex-direction: column;
+    width: 400px;
+}
+.persona-view .vaadin-horizontal-layout{
+    display: flex;
+    flex-direction: row;
+    width: 400px;
+}
+.persona-view .search {
+    align-content: center;
+    width: auto;
+    display: flex;
+    flex-wrap: wrap;
+    padding: 10px;
+    align-items: center;
+}
+
+.persona-view .editor {
+    flex-grow: 1;
+    padding: var(--lumo-space-l);
+}
+.persona-view .button-layout {
+    width: 100%;
+    flex-wrap: wrap;
+    background-color: var(--lumo-contrast-5pct);
+    padding-bottom: var(--lumo-space-s);
+    padding-top: var(--lumo-space-s);
+    padding-left: var(--lumo-space-l);
+    padding-right: var(--lumo-space-l);
+    gap: var(--lumo-space-m);
+}
+.persona-view .grid-wrapper {
+    width: 100%;
+    align-items: center;
+    align-content: end;
+}
+.persona-view .grilla {
+    margin: 10px;
+}
