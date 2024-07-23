@@ -1,13 +1,37 @@
 package com.elolympus.data.Empresa;
 
 import com.elolympus.data.AbstractEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import com.elolympus.data.Auxiliar.CCA;
+import jakarta.persistence.*;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "empresa", schema = "empresa")
 public class Empresa extends AbstractEntity{
+
+    //++++++++++++++++++++++++++++ICCA+++++++++++++++++++++++++++++
+    @Id
+    @SequenceGenerator(
+            name            =   "empresa_sequence",
+            sequenceName    =   "empresa_sequence",
+            allocationSize  =   1,
+            initialValue    =   1
+    )
+    @GeneratedValue(
+            strategy        =   GenerationType.SEQUENCE,
+            generator       =   "empresa_sequence"
+    )
+    private Long id;
+    @Column(name = "creado", nullable = false)
+    private LocalDateTime creado;
+    @Column(name = "creador", length = 200, nullable = false)
+    private String creador;
+    @Column(name = "activo", nullable = false)
+    private Boolean activo;
+    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @Column(name = "sucursal", nullable = false)
+    private Integer sucursal;
 
     @Column(name = "direccion")
     private Integer direccion;
@@ -36,109 +60,12 @@ public class Empresa extends AbstractEntity{
     @Column(name = "commercial_name")
     private String commercialName;
 
-    //Constructor
-    public Empresa() {
-    }
-    //Constructor con parametros
-    public Empresa(Integer direccion, String folderTemps, String folderReports, Boolean allowBuyWithoutStock, Boolean requireSalesPin, Integer documentoTipoXdefecto, String logoEnterprise, String logoWidth, String commercialName) {
-        this.direccion = direccion;
-        this.folderTemps = folderTemps;
-        this.folderReports = folderReports;
-        this.allowBuyWithoutStock = allowBuyWithoutStock;
-        this.requireSalesPin = requireSalesPin;
-        this.documentoTipoXdefecto = documentoTipoXdefecto;
-        this.logoEnterprise = logoEnterprise;
-        this.logoWidth = logoWidth;
-        this.commercialName = commercialName;
-    }
-
-    // Getters and Setters
-    public Integer getDireccion() {
-        return direccion;
-    }
-
-    public void setDireccion(Integer direccion) {
-        this.direccion = direccion;
-    }
-
-    public String getFolderTemps() {
-        return folderTemps;
-    }
-
-    public void setFolderTemps(String folderTemps) {
-        this.folderTemps = folderTemps;
-    }
-
-    public String getFolderReports() {
-        return folderReports;
-    }
-
-    public void setFolderReports(String folderReports) {
-        this.folderReports = folderReports;
-    }
-
-    public Boolean getAllowBuyWithoutStock() {
-        return allowBuyWithoutStock;
-    }
-
-    public void setAllowBuyWithoutStock(Boolean allowBuyWithoutStock) {
-        this.allowBuyWithoutStock = allowBuyWithoutStock;
-    }
-
-    public Boolean getRequireSalesPin() {
-        return requireSalesPin;
-    }
-
-    public void setRequireSalesPin(Boolean requireSalesPin) {
-        this.requireSalesPin = requireSalesPin;
-    }
-
-    public Integer getDocumentoTipoXdefecto() {
-        return documentoTipoXdefecto;
-    }
-
-    public void setDocumentoTipoXdefecto(Integer documentoTipoXdefecto) {
-        this.documentoTipoXdefecto = documentoTipoXdefecto;
-    }
-
-    public String getLogoEnterprise() {
-        return logoEnterprise;
-    }
-
-    public void setLogoEnterprise(String logoEnterprise) {
-        this.logoEnterprise = logoEnterprise;
-    }
-
-    public String getLogoWidth() {
-        return logoWidth;
-    }
-
-    public void setLogoWidth(String logoWidth) {
-        this.logoWidth = logoWidth;
-    }
-
-    public String getCommercialName() {
-        return commercialName;
-    }
-
-    public void setCommercialName(String commercialName) {
-        this.commercialName = commercialName;
-    }
-
-    // toString
-    @Override
-    public String toString() {
-        return "Empresa{" +
-                "direccion=" + direccion +
-                ", folderTemps='" + folderTemps + '\'' +
-                ", folderReports='" + folderReports + '\'' +
-                ", allowBuyWithoutStock=" + allowBuyWithoutStock +
-                ", requireSalesPin=" + requireSalesPin +
-                ", documentoTipoXdefecto=" + documentoTipoXdefecto +
-                ", logoEnterprise='" + logoEnterprise + '\'' +
-                ", logoWidth='" + logoWidth + '\'' +
-                ", commercialName='" + commercialName + '\'' +
-                '}';
+    @PrePersist
+    public void prePersist() {
+        CCA cca     = new CCA();
+        this.creado = cca.getCreado();
+        this.creador= cca.getCreador();
+        this.activo = cca.getActivo();
     }
 
 }
