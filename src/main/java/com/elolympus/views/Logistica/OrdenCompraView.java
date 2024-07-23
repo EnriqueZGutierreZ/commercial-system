@@ -125,7 +125,7 @@ public class OrdenCompraView extends Div {
         dataGrid.addColumn(OrdenCompraDet::getPrecioUnitario,"Precio Unitario");
         dataGrid.addColumn(OrdenCompraDet::getLote,"Lote");
         dataGrid.addColumn(OrdenCompraDet::getCantidadUsada,"Cantidad Usada");
-        dataGrid.addColumn(OrdenCompraDet::getTotaldet,"Total");
+        dataGrid.addColumn(OrdenCompraDet::getTotalDet,"Total");
 
 
         dataGrid.asSingleSelect().addValueChangeListener(evt -> editOrdenCompraDet(evt.getValue()));

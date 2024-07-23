@@ -1,16 +1,21 @@
 package com.elolympus.data.Logistica;
 
 import com.elolympus.data.AbstractEntity;
+import com.elolympus.data.Auxiliar.CCA;
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
-@RequiredArgsConstructor
+
+
+@EqualsAndHashCode(callSuper = true)
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "orden_compra", schema = "logistica")
 public class OrdenCompra extends AbstractEntity {
@@ -29,11 +34,11 @@ public class OrdenCompra extends AbstractEntity {
     )
     private Long id;
     @Column(name = "creado", nullable = false)
-    private final LocalDateTime creado;
+    private LocalDateTime creado;
     @Column(name = "creador", length = 200, nullable = false)
-    private final String creador;
+    private String creador;
     @Column(name = "activo", nullable = false)
-    private final Boolean activo;
+    private Boolean activo;
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @Column(name = "almacen_entrega")
     private Integer almacenEntrega;
@@ -84,7 +89,15 @@ public class OrdenCompra extends AbstractEntity {
 
     //RELACION
     @OneToMany(mappedBy = "ordenCompra", cascade = CascadeType.ALL, orphanRemoval = true)
-    private final List<OrdenCompraDet> detalles;
+    private List<OrdenCompraDet> detalles;
+
+    @PrePersist
+    public void prePersist() {
+        CCA cca     = new CCA();
+        this.creado = cca.getCreado();
+        this.creador= cca.getCreador();
+        this.activo = cca.getActivo();
+    }
 
 
 

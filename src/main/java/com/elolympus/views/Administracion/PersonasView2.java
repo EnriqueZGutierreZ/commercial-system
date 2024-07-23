@@ -45,30 +45,30 @@ public class PersonasView2 extends Div implements BeforeEnterObserver{
     private BeanValidationBinder<Persona> binder;
     private Persona persona;
 
-    public final String PERSONA_ID = "PersonaID";
+    public final String PERSONA_ID                  = "PersonaID";
     public final String PERSONA_EDIT_ROUTE_TEMPLATE = "persona/%s/edit";
-    public Grid<Persona> gridPersonas       = new Grid<>(Persona.class,false);
-    public final TextField txtDni           = new TextField("DNI","","Busqueda por DNI");
-    public final TextField txtNombres       = new TextField("Nombres","","Busqueda por Nombres");
-    public final TextField txtApellidos     = new TextField("Apellidos","","Busqueda por Apellidos");
-    public final Button btnFiltrar          = new Button("BUSCAR",new Icon(VaadinIcon.FILTER));
-    public final Button toggleButton        = new Button("Busqueda", new Icon(VaadinIcon.FILTER));
+    public Grid<Persona>    gridPersonas     = new Grid<>(Persona.class,false);
+    public final TextField  txtDni           = new TextField("DNI","","Busqueda por DNI");
+    public final TextField  txtNombres       = new TextField("Nombres","","Busqueda por Nombres");
+    public final TextField  txtApellidos     = new TextField("Apellidos","","Busqueda por Apellidos");
+    public final Button     btnFiltrar       = new Button("BUSCAR",new Icon(VaadinIcon.FILTER));
+    public final Button     toggleButton     = new Button("Busqueda", new Icon(VaadinIcon.FILTER));
 
     public final HorizontalLayout tophl     = new HorizontalLayout(txtDni,txtNombres,txtApellidos,btnFiltrar);
 
     public FormLayout formLayout = new FormLayout();
-    public TextField nombres           = new TextField("Nombres","");
-    public TextField apellidos         = new TextField("Apellidos","");
+    public TextField    nombres           = new TextField("Nombres","");
+    public TextField    apellidos         = new TextField("Apellidos","");
     public IntegerField tipo_documento    = new IntegerField("Tipo de Documento","");
     public IntegerField num_documento     = new IntegerField("DNI","");
     public IntegerField celular           = new IntegerField("Celular","");
-    public TextField email             = new TextField("Correo","");
-    public TextField sexo              = new TextField("Sexo","");
-    public TextField creador           = new TextField("Creador", "");
-    private final Button cancel = new Button("Cancelar");
-    private final Button save = new Button("Guardar");
-    private final Button delete = new Button("Eliminar",VaadinIcon.TRASH.create());
-    public final SplitLayout splitLayout = new SplitLayout();
+    public TextField    email             = new TextField("Correo","");
+    public TextField    sexo              = new TextField("Sexo","");
+    public TextField    creador           = new TextField("Creador", "");
+    private final Button cancel     = new Button("Cancelar");
+    private final Button save       = new Button("Guardar");
+    private final Button delete     = new Button("Eliminar",VaadinIcon.TRASH.create());
+    public final SplitLayout splitLayout  = new SplitLayout();
 
     public DataTable<Persona> grilla = new DataTable<>();
 

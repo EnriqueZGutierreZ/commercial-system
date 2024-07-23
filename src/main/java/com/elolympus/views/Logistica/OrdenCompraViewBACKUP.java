@@ -167,7 +167,7 @@ public class OrdenCompraViewBACKUP extends Div {
         binderDet.forField(producto).bind(OrdenCompraDet::getProducto, OrdenCompraDet::setProducto);
         binderDet.forField(cantidad).bind(OrdenCompraDet::getCantidad, OrdenCompraDet::setCantidad);
         binderDet.forField(precioUnitario).bind(OrdenCompraDet::getPrecioUnitario, OrdenCompraDet::setPrecioUnitario);
-        binderDet.forField(totaldet).bind(OrdenCompraDet::getTotaldet, OrdenCompraDet::setTotaldet);
+        binderDet.forField(totaldet).bind(OrdenCompraDet::getTotalDet, OrdenCompraDet::setTotalDet);
         binderDet.forField(descuento).bind(OrdenCompraDet::getDescuento, OrdenCompraDet::setDescuento);
         binderDet.forField(almacen).bind(OrdenCompraDet::getAlmacen, OrdenCompraDet::setAlmacen);
         binderDet.forField(cantidadTg).bind(OrdenCompraDet::getCantidadTg, OrdenCompraDet::setCantidadTg);

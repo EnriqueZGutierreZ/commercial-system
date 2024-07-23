@@ -92,23 +92,23 @@ public class ListOrdenCompraView extends Div {
     }
 
     private void initDataGrid(){
-        dataGrid.addColumn(OrdenCompra::getAlmacenEntrega,"Almacen Entrega");
-        dataGrid.addColumn(OrdenCompra::getNumeroProveedor,"Numero Proveedor");
-        dataGrid.addColumn(OrdenCompra::getDireccionProveedor,"Direccion Proveedor");
-        dataGrid.addColumn(OrdenCompra::getFecha,"Fecha");
-        dataGrid.addColumn(OrdenCompra::getFechaEntrega,"Fecha Entrega");
-        dataGrid.addColumn(OrdenCompra::getMoneda,"Moneda");
-        dataGrid.addColumn(OrdenCompra::getImpuesto,"Impuesto");
-        dataGrid.addColumn(OrdenCompra::getObservaciones,"Observaciones");
-        dataGrid.addColumn(OrdenCompra::getTotalCobrado,"Total Cobrado");
-        dataGrid.addColumn(OrdenCompra::getTipoCambio,"Tipo Cambio");
-        dataGrid.addColumn(OrdenCompra::getDiasCredito,"Credias/Dias");
-        dataGrid.addColumn(OrdenCompra::getSucursal,"Sucursal");
-        dataGrid.addColumn(OrdenCompra::getImpuesto_incluido,"Impuesto Incluido");
-        dataGrid.addColumn(OrdenCompra::getDocumento_pago,"Documento Pago");
-        dataGrid.addColumn(OrdenCompra::getTotal,"Total");
+//        dataGrid.addColumn(OrdenCompra::getAlmacenEntrega,"Almacen Entrega");
+//        dataGrid.addColumn(OrdenCompra::getNumeroProveedor,"Numero Proveedor");
+//        dataGrid.addColumn(OrdenCompra::getDireccionProveedor,"Direccion Proveedor");
+//        dataGrid.addColumn(OrdenCompra::getFecha,"Fecha");
+//        dataGrid.addColumn(OrdenCompra::getFechaEntrega,"Fecha Entrega");
+//        dataGrid.addColumn(OrdenCompra::getMoneda,"Moneda");
+//        dataGrid.addColumn(OrdenCompra::getImpuesto,"Impuesto");
+//        dataGrid.addColumn(OrdenCompra::getObservaciones,"Observaciones");
+//        dataGrid.addColumn(OrdenCompra::getTotalCobrado,"Total Cobrado");
+//        dataGrid.addColumn(OrdenCompra::getTipoCambio,"Tipo Cambio");
+//        dataGrid.addColumn(OrdenCompra::getDiasCredito,"Credias/Dias");
+//        dataGrid.addColumn(OrdenCompra::getSucursal,"Sucursal");
+//        dataGrid.addColumn(OrdenCompra::getImpuesto_incluido,"Impuesto Incluido");
+//        dataGrid.addColumn(OrdenCompra::getDocumento_pago,"Documento Pago");
+//        dataGrid.addColumn(OrdenCompra::getTotal,"Total");
 
-        dataGrid.asSingleSelect().addValueChangeListener(evt -> editOrdenCompra(evt.getValue()));
+        //dataGrid.asSingleSelect().addValueChangeListener(evt -> editOrdenCompra(evt.getValue()));
     }
 
     private void refreshGrids() {
