@@ -22,6 +22,7 @@ import com.elolympus.views.grillaporsifunciona.GrillaporsifuncionaView;
 import com.elolympus.views.Bienvenida.BienvenidaView;
 import com.elolympus.views.reportes.ReportesView;
 import com.elolympus.views.sobrenosotros.SobreNosotrosView;
+import com.elolympus.views.ubigeo.UbigeoView;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
@@ -186,6 +187,10 @@ public class MainLayout extends AppLayout {
             nav.addItem(new SideNavItem("Galeria Imagenes", GaleriaImagenesView.class,
                     LineAwesomeIcon.TH_LIST_SOLID.create()));
 
+        }
+        //agregar vista ubigeo
+        if (accessChecker.hasAccess(BienvenidaView.class)) {
+            nav.addItem(new SideNavItem("Ubigeo", UbigeoView.class, LineAwesomeIcon.GLOBE_SOLID.create()));
         }
 
         return nav;
