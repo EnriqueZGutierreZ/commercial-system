@@ -12,13 +12,13 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 //Constructor Vacio - get - set - equals - toString
-@EqualsAndHashCode(callSuper = true)
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
 @Table(name = "persona", schema = "administracion")
-public class Persona extends AbstractEntity {
+public class Persona {
 
     //public AuthenticatedUser authenticatedUser;
     //++++++++++++++++++++++++++++ICCA+++++++++++++++++++++++++++++
@@ -39,7 +39,7 @@ public class Persona extends AbstractEntity {
     @Column(name = "creador", length = 200, nullable = false)
     private String creador;
     @Column(name = "activo", nullable = false)
-    private Boolean activo;
+    private boolean activo;
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @Column(name = "apellidos", length = 250, nullable = false)

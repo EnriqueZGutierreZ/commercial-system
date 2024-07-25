@@ -37,7 +37,7 @@ public class Direccion {
     @Column(name = "creador", length = 200, nullable = false)
     private String creador;
     @Column(name = "activo", nullable = false)
-    private Boolean activo;
+    private boolean activo;
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @Column(name = "descripcion", length = 250, nullable = false)

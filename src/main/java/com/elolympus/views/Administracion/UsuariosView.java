@@ -107,9 +107,9 @@ public class UsuariosView extends Div {
     private final SerializableBiConsumer<Span, Usuario> EstadoComponenteActivo = (
             span, usuario) -> {
         String theme = String.format("badge %s",
-                usuario.getActivo() ? "success" : "error");
+                usuario.isActivo() ? "success" : "error");
         span.getElement().setAttribute("theme", theme);
-        span.setText(usuario.getActivo()?"Activo":"Desactivado");
+        span.setText(usuario.isActivo()?"Activo":"Desactivado");
     };
     private ComponentRenderer<Span, Usuario> CrearComponmenteActivoRenderer() {
         return new ComponentRenderer<>(Span::new, EstadoComponenteActivo);
@@ -214,9 +214,16 @@ public class UsuariosView extends Div {
          personaComboBox.setItems(personaService.findAll());
          personaComboBox.setItemLabelGenerator(Persona::getNombreCompleto); // Asumiendo que Persona tiene un método getNombreCompleto
          binder.forField(personaComboBox).bind(Usuario::getPersona, Usuario::setPersona);
+
+        //activoCheckbox.setValue(personaService.);
+        //activoCheckbox.setValue((Usuario::isActivo) ? Boolean.TRUE : Boolean.FALSE);
+        //activoCheckbox.setValue(() ? Boolean.TRUE : Boolean.FALSE); // Asumiendo que Persona tiene un método getNombreCompleto
+        binder.forField(activoCheckbox).bind(Usuario::isActivo, Usuario::setActivo);
     }
 
     private void save() {
+
+        System.out.println("USUARIO: "+this.usuario );
         try {
             // Verifica si el usuario tiene información válida antes de intentar guardar
             if (usuarioField.isEmpty() && passwordField.isEmpty()) {

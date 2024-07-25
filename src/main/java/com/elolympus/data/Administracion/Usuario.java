@@ -14,13 +14,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
-@EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "usuario", schema = "administracion")
-public class Usuario extends AbstractEntity {
+public class Usuario {
     //++++++++++++++++++++++++++++ICCA+++++++++++++++++++++++++++++
     @Id
     @SequenceGenerator(
@@ -39,7 +38,7 @@ public class Usuario extends AbstractEntity {
     @Column(name = "creador", length = 200, nullable = false)
     private String creador;
     @Column(name = "activo", nullable = false)
-    private Boolean activo;
+    private boolean activo;
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @Column(name = "usuario", length = 50, nullable = false)
     private String usuario;

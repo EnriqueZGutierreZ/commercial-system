@@ -38,6 +38,7 @@ import java.util.Optional;
 @Route(value = "rol/:RolID?/:action?(edit)", layout = MainLayout.class)
 @PermitAll
 public class RolesView extends Div implements BeforeEnterObserver {
+
     private final RolService rolService;
     private BeanValidationBinder<Rol> binder;
     private Rol rol;
@@ -57,10 +58,11 @@ public class RolesView extends Div implements BeforeEnterObserver {
 
     private final FormLayout formLayout = new FormLayout();
 
-    private final TextField areaField= new TextField("Área","Buscar por Área");
-    private final TextField cargoField = new TextField("Cargo","Buscar por Cargo");
-    private final TextField descripcionField = new TextField("Descripción","Buscar por Descripción");
+    private final TextField areaField = new TextField("Área", "Buscar por Área");
+    private final TextField cargoField = new TextField("Cargo", "Buscar por Cargo");
+    private final TextField descripcionField = new TextField("Descripción", "Buscar por Descripción");
     private Grid<Rol> grid = new Grid<>(Rol.class);
+
     @Autowired
     public RolesView(RolService rolService) {
         this.rolService = rolService;

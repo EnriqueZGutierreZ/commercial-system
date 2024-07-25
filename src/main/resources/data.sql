@@ -1,14 +1,16 @@
-INSERT INTO administracion.rol (id,version,creado, creador, activo, area, cargo, descripcion, can_create, can_read, can_update, can_delete)
-VALUES (1,0,NOW(), 'admin', TRUE, 'Tecnología de la Información', 'Administrador del Sistema', 'Responsable de la administración y mantenimiento del sistema', TRUE, TRUE, TRUE, TRUE)
-ON CONFLICT (id) DO NOTHING;
-INSERT INTO administracion.persona(id,version,creado, creador, activo, apellidos, nombres, sexo, tipo_documento, num_documento, email, celular)
-VALUES(1,0,NOW(), 'admin', TRUE, 'ApellidoAdmin', 'NombreAdmin', 'M', 1, 12345678, 'admin@example.com', 987654321)
-ON CONFLICT (id) DO NOTHING;
-INSERT INTO administracion.usuario (id,version,creado, creador, activo, rol_id, usuario, password, persona_id)
-VALUES (1,0,NOW(), 'admin', TRUE, 1, 'admin', '$2b$12$z8kZdvmu81JqoQ9KcvIeMOfekEmvvNinx02a.ERYXvXNqF2zUtpnC', 1)
-ON CONFLICT (id) DO NOTHING;
+--INSERT INTO administracion.rol (creado, creador, activo, area, cargo, descripcion, can_create, can_read, can_update, can_delete)
+--VALUES (NOW(), 'admin', TRUE, 'Tecnología de la Información', 'Administrador del Sistema', 'Responsable de la administración y mantenimiento del sistema', TRUE, TRUE, TRUE, TRUE)
+--ON CONFLICT (id) DO NOTHING;
 
+--INSERT INTO administracion.persona(creado, creador, activo, apellidos, nombres, sexo, tipo_documento, num_documento, email, celular)
+--VALUES(NOW(), 'admin', TRUE, 'ApellidoAdmin', 'NombreAdmin', 'M', 1, 12345678, 'admin@example.com', 987654321)
+--ON CONFLICT (id) DO NOTHING;
 
+--INSERT INTO administracion.usuario (creado, creador, activo, rol_id, usuario, password, persona_id)
+--VALUES (NOW(), 'admin', TRUE, 1, 'admin', '$2b$12$z8kZdvmu81JqoQ9KcvIeMOfekEmvvNinx02a.ERYXvXNqF2zUtpnC', 1)
+--ON CONFLICT (id) DO NOTHING;
+
+select* from administracion.rol
 
 -- insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 1,'Eula','Lane','eula.lane@jigrormo.ye','(762) 526-5961','1954-06-29','Insurance Clerk','Worker',false)
 -- insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 2,'Barry','Rodriquez','barry.rodriquez@zun.mm','(267) 955-5124','2013-06-29','Mortarman','Manager',false)

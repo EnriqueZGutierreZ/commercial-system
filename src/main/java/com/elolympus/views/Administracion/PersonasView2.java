@@ -126,9 +126,9 @@ public class PersonasView2 extends Div implements BeforeEnterObserver{
     private final SerializableBiConsumer<Span, Persona> EstadoComponenteActivo = (
             span, persona) -> {
         String theme = String.format("badge %s",
-                persona.getActivo() ? "success" : "error");
+                persona.isActivo() ? "success" : "error");
         span.getElement().setAttribute("theme", theme);
-        span.setText(persona.getActivo()?"Activo":"Desactivado");
+        span.setText(persona.isActivo()?"Activo":"Desactivado");
     };
 
     private ComponentRenderer<Span, Persona> CrearComponmenteActivoRenderer() {

@@ -12,13 +12,13 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-@EqualsAndHashCode(callSuper = true)
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "rol", schema = "administracion")
-public class Rol extends AbstractEntity {
+public class Rol {
     //++++++++++++++++++++++++++++ICCA+++++++++++++++++++++++++++++
     @Id
     @SequenceGenerator(
@@ -37,7 +37,7 @@ public class Rol extends AbstractEntity {
     @Column(name = "creador", length = 200, nullable = false)
     private String creador;
     @Column(name = "activo", nullable = false)
-    private Boolean activo;
+    private boolean activo;
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @Column(name = "area", length = 100, nullable = false)
     private String area;
@@ -56,7 +56,6 @@ public class Rol extends AbstractEntity {
     private Boolean canDelete;
 
     @OneToOne
-    @JoinColumn(name="id")
     private Usuario usuario;
 
     @PrePersist
