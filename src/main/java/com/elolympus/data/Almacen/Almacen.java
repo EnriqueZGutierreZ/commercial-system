@@ -2,6 +2,7 @@ package com.elolympus.data.Almacen;
 
 import com.elolympus.data.AbstractEntity;
 import com.elolympus.data.Auxiliar.CCA;
+import com.elolympus.data.Empresa.Sucursal;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -37,8 +38,10 @@ public class Almacen extends AbstractEntity {
     @Column(name = "activo", nullable = false)
     private Boolean activo;
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @Column(name = "sucursal", nullable = false)
-    private Integer sucursal;
+    @ManyToOne
+    @JoinColumn(name = "sucursal_id", nullable = false)
+    private Sucursal sucursal;
+
     @Column(name = "codigo", nullable = false)
     private Integer Codigo; //1 2 3
     @Column(name = "descripcion", nullable = false)

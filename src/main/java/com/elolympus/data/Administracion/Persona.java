@@ -58,8 +58,10 @@ public class Persona {
     @Column(name = "celular", length = 15, nullable = false)
     private Integer celular;
 
+    @OneToOne(cascade = CascadeType.ALL)
+    private Direccion direccion;
+
     @OneToOne
-    //@JoinColumn(name = "persona_id") // Ajusta el nombre de la columna según tu esquema
     private Usuario usuario;
 
     @PrePersist

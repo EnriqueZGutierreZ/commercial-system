@@ -3,11 +3,13 @@ package com.elolympus.views.Administracion;
 import com.elolympus.component.DataTable;
 import com.elolympus.data.Administracion.Persona;
 import com.elolympus.services.services.PersonaService;
+import com.elolympus.views.Logistica.OrdenCompraView;
 import com.elolympus.views.MainLayout;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
@@ -64,10 +66,11 @@ public class PersonasView2 extends Div implements BeforeEnterObserver{
     public IntegerField celular           = new IntegerField("Celular","");
     public TextField    email             = new TextField("Correo","");
     public TextField    sexo              = new TextField("Sexo","");
-    public TextField    creador           = new TextField("Creador", "");
-    private final Button cancel     = new Button("Cancelar");
-    private final Button save       = new Button("Guardar");
-    private final Button delete     = new Button("Eliminar",VaadinIcon.TRASH.create());
+    public TextField    direccion         = new TextField("Direccion", "");
+    private final Button btnDireccion     = new Button("Obtener Direccion");
+    private final Button cancel           = new Button("Cancelar");
+    private final Button save             = new Button("Guardar");
+    private final Button delete           = new Button("Eliminar",VaadinIcon.TRASH.create());
     public final SplitLayout splitLayout  = new SplitLayout();
 
     public DataTable<Persona> grilla = new DataTable<>();
@@ -114,6 +117,7 @@ public class PersonasView2 extends Div implements BeforeEnterObserver{
     }
 
     public void initStyles(){
+        direccion.setEnabled(false);
         delete.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
         cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
@@ -143,7 +147,7 @@ public class PersonasView2 extends Div implements BeforeEnterObserver{
         editorDiv.setClassName("editor");
         editorLayoutDiv.add(editorDiv);
         formLayout.add(nombres, apellidos,
-                tipo_documento, num_documento, celular, email, sexo, creador);
+                tipo_documento, num_documento, celular, email, sexo, direccion, btnDireccion);
         editorDiv.add(formLayout);
         createButtonLayout(editorLayoutDiv);
         splitLayout.addToSecondary(editorLayoutDiv);
@@ -267,6 +271,14 @@ public class PersonasView2 extends Div implements BeforeEnterObserver{
     private void populateForm(Persona value) {
         this.persona = value;
         binder.readBean(this.persona);
+    }
+
+    private void add(){
+        OrdenCompraView ordenCompra = new OrdenCompraView(this.ordenCompraService);
+        Dialog view = new Dialog();
+        view.setHeaderTitle("ORDEN DE COMPRA");
+        view.add(ordenCompra);
+        view.open();
     }
 
     @Override

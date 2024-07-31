@@ -94,13 +94,14 @@ public class EmpresaView extends Div {
         createButtonsLayout(editorDiv);
         return editorDiv;
     }
+
     private void createButtonsLayout(Div div) {
         HorizontalLayout buttonLayout = new HorizontalLayout();
         buttonLayout.setClassName("button-layout");
         buttonLayout.add(save, cancel, delete);
         div.add(buttonLayout);
-
     }
+
     private Component createGridLayout() {
         HorizontalLayout busquedaDiv = new HorizontalLayout();
         busquedaDiv.addClassName("tophl");
@@ -114,6 +115,7 @@ public class EmpresaView extends Div {
     private void refreshGrid() {
         gridempresa.setItems(empresaService.findAll());
     }
+
     private void save(){
         try{
             if(empresa==null){
@@ -154,6 +156,7 @@ public class EmpresaView extends Div {
         binder.readBean(empresa);
         save.setText("Guardar");
     }
+
     private void editEmpresa(Empresa empresa){
         if(empresa==null){
             clearForm();

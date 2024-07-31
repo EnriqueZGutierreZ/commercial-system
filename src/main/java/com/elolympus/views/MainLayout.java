@@ -2,7 +2,6 @@ package com.elolympus.views;
 
 import com.elolympus.data.Administracion.Usuario;
 import com.elolympus.security.AuthenticatedUser;
-import com.elolympus.views.Administracion.PersonasView;
 import com.elolympus.views.Administracion.PersonasView2;
 import com.elolympus.views.Administracion.RolesView;
 import com.elolympus.views.Administracion.UsuariosView;
@@ -13,7 +12,7 @@ import com.elolympus.views.Ventas.FacturasView;
 import com.elolympus.views.Ventas.NotasCreditoView;
 import com.elolympus.views.Chat.ChatEView;
 import com.elolympus.views.colaboracion.ColaboracionView;
-import com.elolympus.views.direccion.DireccionView;
+import com.elolympus.views.direccion.Direccion2View;
 import com.elolympus.views.editartabla.EditarTablaView;
 import com.elolympus.views.formcreditcard.FormCreditCardView;
 import com.elolympus.views.formpersona.FormPersonaView;
@@ -170,8 +169,8 @@ public class MainLayout extends AppLayout {
                     new SideNavItem("Colaboracion", ColaboracionView.class, LineAwesomeIcon.COLUMNS_SOLID.create()));
 
         }
-        if (accessChecker.hasAccess(DireccionView.class)) {
-            nav.addItem(new SideNavItem("Direccion", DireccionView.class, LineAwesomeIcon.MAP_MARKER_SOLID.create()));
+        if (accessChecker.hasAccess(Direccion2View.class)) {
+            nav.addItem(new SideNavItem("Direccion", Direccion2View.class, LineAwesomeIcon.MAP_MARKER_SOLID.create()));
 
         }
         if (accessChecker.hasAccess(FormCreditCardView.class)) {

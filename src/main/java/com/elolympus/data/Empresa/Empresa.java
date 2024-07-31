@@ -3,12 +3,19 @@ package com.elolympus.data.Empresa;
 import com.elolympus.data.AbstractEntity;
 import com.elolympus.data.Auxiliar.CCA;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "empresa", schema = "empresa")
-public class Empresa extends AbstractEntity{
+public class Empresa{
 
     //++++++++++++++++++++++++++++ICCA+++++++++++++++++++++++++++++
     @Id
@@ -30,11 +37,12 @@ public class Empresa extends AbstractEntity{
     @Column(name = "activo", nullable = false)
     private Boolean activo;
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @Column(name = "sucursal", nullable = false)
-    private Integer sucursal;
-
-    @Column(name = "direccion")
-    private Integer direccion;
+//    @Column(name = "sucursal", nullable = false)
+//    private Integer sucursal;
+//    @Column(name = "direccion")
+//    private Integer direccion;
+    @OneToMany(mappedBy = "empresa", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Sucursal> sucursales;
 
     @Column(name = "folder_temps")
     private String folderTemps;

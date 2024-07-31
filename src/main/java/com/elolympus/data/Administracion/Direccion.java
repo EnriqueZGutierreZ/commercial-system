@@ -2,6 +2,7 @@ package com.elolympus.data.Administracion;
 
 import com.elolympus.data.Auxiliar.CCA;
 import com.elolympus.data.Auxiliar.Ubigeo;
+import com.elolympus.data.Empresa.Sucursal;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -44,6 +45,12 @@ public class Direccion {
     public String descripcion;
     @Column(name = "referencia", length = 200, nullable = false)
     public String referencia;
+
+    @OneToOne(mappedBy = "direccion")
+    private Sucursal sucursal;
+
+    @OneToOne(mappedBy = "direccion")
+    private Persona persona;
 
     @OneToOne
     public Ubigeo ubigeo;
