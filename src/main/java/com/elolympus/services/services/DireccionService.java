@@ -20,36 +20,29 @@ public class DireccionService {
         this.repository = repository;
     }
 
-    public int count() {
-        return (int) repository.count();
-    }
-
-    // Método para encontrar todos los usuarios
     public List<Direccion> findAll() {
         return repository.findAll();
     }
+
     public List<Direccion> findAllByActivo(Boolean activo) {
-        return repository.findAll(UsuarioSpecifications.conEstadoActivo(true));
+        return repository.findAll((root, query, criteriaBuilder) ->
+                criteriaBuilder.equal(root.get("activo"), activo)
+        );
     }
 
-    // Método para guardar o actualizar un usuario
-    public Direccion update(Direccion direccion) {
-        // Aquí puedes añadir lógica antes de guardar el usuario
-        return repository.save(usuario);
-    }
     public Direccion save(Direccion direccion) {
-        // Aquí puedes añadir lógica antes de guardar el usuario
-        return repository.save(usuario);
+        return repository.save(direccion);
     }
 
-    // Método para eliminar un usuario
+    public Direccion update(Direccion direccion) {
+        return repository.save(direccion);
+    }
+
     public void delete(Direccion direccion) {
         repository.delete(direccion);
     }
 
-    // Método para encontrar un usuario por ID
     public Optional<Direccion> findById(Long id) {
         return repository.findById(id);
     }
-
 }

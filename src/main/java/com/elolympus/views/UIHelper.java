@@ -3,7 +3,9 @@ package com.elolympus.views;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.charts.model.Title;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -26,6 +28,18 @@ public class UIHelper {
         FormLayout formLayout = new FormLayout();
         formLayout.add(components);
         return formLayout;
+    }
+
+    public static Title createTitle(String text) {
+        Title title = new Title();
+        title.setText(text);
+        return title;
+    }
+
+    public static Title createTextField(String text) {
+        Title title = new Title();
+        title.setText(text);
+        return title;
     }
 
     public static <T> void configureGrid(Grid<T> grid, List<Grid.Column<T>> columns) {

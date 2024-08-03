@@ -1,10 +1,12 @@
 package com.elolympus.views.Administracion;
 
 import com.elolympus.component.DataTable;
+import com.elolympus.data.Administracion.Direccion;
 import com.elolympus.data.Administracion.Persona;
 import com.elolympus.services.services.PersonaService;
 import com.elolympus.views.Logistica.OrdenCompraView;
 import com.elolympus.views.MainLayout;
+import com.elolympus.views.direccion.DireccionView;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -46,6 +48,7 @@ public class PersonasView2 extends Div implements BeforeEnterObserver{
     private final PersonaService PersonaService;
     private BeanValidationBinder<Persona> binder;
     private Persona persona;
+    private Direccion direccion;
 
     public final String PERSONA_ID                  = "PersonaID";
     public final String PERSONA_EDIT_ROUTE_TEMPLATE = "persona/%s/edit";
@@ -66,7 +69,7 @@ public class PersonasView2 extends Div implements BeforeEnterObserver{
     public IntegerField celular           = new IntegerField("Celular","");
     public TextField    email             = new TextField("Correo","");
     public TextField    sexo              = new TextField("Sexo","");
-    public TextField    direccion         = new TextField("Direccion", "");
+    public TextField    txtdireccion      = new TextField("Direccion", "");
     private final Button btnDireccion     = new Button("Obtener Direccion");
     private final Button cancel           = new Button("Cancelar");
     private final Button save             = new Button("Guardar");
@@ -112,12 +115,13 @@ public class PersonasView2 extends Div implements BeforeEnterObserver{
         save.addClickListener(e->onBtnSave());
         cancel.addClickListener(e->onBtnCancel());
         delete.addClickListener(e->onBtnDelete());
+        btnDireccion.addClickListener(e->getDireccion());
         gridPersonas.asSingleSelect().addValueChangeListener(e->asSingleSelect(e.getValue(),this.save));
         refreshGrid();
     }
 
     public void initStyles(){
-        direccion.setEnabled(false);
+        txtdireccion.setEnabled(false);
         delete.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
         cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
@@ -139,7 +143,6 @@ public class PersonasView2 extends Div implements BeforeEnterObserver{
         return new ComponentRenderer<>(Span::new, EstadoComponenteActivo);
     }
     private void createEditorLayout(SplitLayout splitLayout) {
-
         Div editorLayoutDiv = new Div();
         editorLayoutDiv.setHeightFull();
         editorLayoutDiv.setClassName("editor-layout");
@@ -147,7 +150,7 @@ public class PersonasView2 extends Div implements BeforeEnterObserver{
         editorDiv.setClassName("editor");
         editorLayoutDiv.add(editorDiv);
         formLayout.add(nombres, apellidos,
-                tipo_documento, num_documento, celular, email, sexo, direccion, btnDireccion);
+                tipo_documento, num_documento, celular, email, sexo, txtdireccion, btnDireccion);
         editorDiv.add(formLayout);
         createButtonLayout(editorLayoutDiv);
         splitLayout.addToSecondary(editorLayoutDiv);
@@ -242,6 +245,16 @@ public class PersonasView2 extends Div implements BeforeEnterObserver{
         }
     }
 
+    private void getDireccion() {
+        DireccionView direccionView = new DireccionView();
+        Dialog view = new Dialog();
+        view.setHeaderTitle("DIRECCION");
+        view.add(direccionView);
+        view.open();
+        this.direccion = direccionView.direccion;
+        this.txtdireccion.setValue(direccionView.direccion.toString());
+    }
+
 
     public void asSingleSelect(Persona persona, Button btnSave) {
         if (persona != null) {
@@ -274,9 +287,9 @@ public class PersonasView2 extends Div implements BeforeEnterObserver{
     }
 
     private void add(){
-        OrdenCompraView ordenCompra = new OrdenCompraView(this.ordenCompraService);
+        DireccionView ordenCompra = new DireccionView();
         Dialog view = new Dialog();
-        view.setHeaderTitle("ORDEN DE COMPRA");
+        view.setHeaderTitle("ORDEN DE COMPRA DETALLE");
         view.add(ordenCompra);
         view.open();
     }

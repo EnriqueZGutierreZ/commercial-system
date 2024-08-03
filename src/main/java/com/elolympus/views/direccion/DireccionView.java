@@ -2,16 +2,23 @@ package com.elolympus.views.direccion;
 
 import com.elolympus.component.DataGrid;
 import com.elolympus.data.Administracion.Direccion;
+import com.elolympus.data.ubigeo.Departamento;
+import com.elolympus.data.ubigeo.Distrito;
+import com.elolympus.data.ubigeo.Provincia;
+import com.elolympus.services.services.DireccionService;
 import com.elolympus.services.services.OrdenCompraService;
+import com.elolympus.services.services.UbigeoService;
 import com.elolympus.views.MainLayout;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -34,63 +41,65 @@ import java.time.LocalDate;
 @PermitAll
 public class DireccionView extends Div {
 
-    private final DireccionService direccionService;
-    private DireccionView ordenCompra;
-    private final BeanValidationBinder<DireccionView> binder= new BeanValidationBinder<>(DireccionView.class);
+    private DireccionService direccionService;
+    private UbigeoService ubigeoService;
+    private DireccionView direccionView;
+    public Direccion direccion;
+    private final BeanValidationBinder<DireccionView> binder = new BeanValidationBinder<>(DireccionView.class);
 
     //GRID
     private final Grid<Direccion> grid = new Grid<>(Direccion.class);
-    private final DataGrid<Direccion> dataGrid = new DataGrid<>(true,false);
+    private final DataGrid<Direccion> dataGrid = new DataGrid<>(true, false);
     private final Button editar = new Button("EDITAR");
     private final Button agregar = new Button("AGREGAR");
     private final Button eliminar = new Button("ELIMINAR");
     private final Button cancelar = new Button("CANCELAR");
 
 
-    private final VerticalLayout panel = new VerticalLayout();
-    private final HorizontalLayout panelFiltro     = new HorizontalLayout();
-    private final HorizontalLayout panelButton     = new HorizontalLayout();
+    private final VerticalLayout    panel               = new VerticalLayout();
+    private final HorizontalLayout  panelUbigeo         = new HorizontalLayout();
+    private ComboBox<Departamento>  departamentoComboBox= new ComboBox<>("Departamento");
+    private ComboBox<Provincia>     provinciaComboBox   = new ComboBox<>("Provincia");
+    private ComboBox<Distrito>      distritoComboBox    = new ComboBox<>("Distrito");
+    private Text                    txtnumeroUbigeo     = new Text("Número de Ubigeo: ");
 
-    private final TextField Sucursal = new TextField("Documento Pago");
-    private final DatePicker FechaInicio     = new DatePicker("Fecha Inicio", LocalDate.now());
-    private final DatePicker FechaFin        = new DatePicker("Fecha Fin",LocalDate.now());
+    private final HorizontalLayout  panelButton         = new HorizontalLayout();
+
 
     //TEXTFIELD UI Direccion
 
     private final Text titulo = new Text("DIRECCION");
     private final TextField Descripcion = new TextField("Descripcion");
-    private final TextField Referencia  = new TextField("Referencia");
+    private final TextField Referencia = new TextField("Referencia");
     private final FormLayout form = new FormLayout();
 
-    //constructor
-    public DireccionView(DireccionService direccionService) {
-        this.direccionService = direccionService;
+    //constructor SOBRECARGADO
 
-
-        initDataGrid();
-        this.panelFiltro.add(Sucursal,FechaInicio,FechaFin);
-        this.form.add(almacenEntrega,numeroProveedor,direccionProveedor,fecha,fechaEntrega,
-                formaPago,moneda,impuesto,observaciones,tipoCambio,diasCredito,sucursal,
-                impuesto_incluido,documento_pago,totalCobrado,total);
-        this.panelButton.add(agregar,editar,eliminar,cancelar);
-        this.panel.add(form,dataGrid,panelButton);
+    //CONTRUCTOR
+    public DireccionView() {
+        this.ubigeoService = new UbigeoService();
+        this.panelUbigeo.add(departamentoComboBox, provinciaComboBox, distritoComboBox , txtnumeroUbigeo);
+        this.form.add(Descripcion, Referencia);
+        this.panelButton.add(agregar, editar, eliminar, cancelar);
+        this.panel.add(panelUbigeo,form, panelButton);
         this.add(panel);
         init();
     }
-    private void init(){
+
+    private void init() {
         this.panel.setSizeFull();
         this.panelButton.setWidthFull();
         //this.panelButton.setAlignItems(FlexComponent.Alignment.END);
         this.panelButton.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
-        this.panelFiltro.setWidthFull();
-        initDataGrid();
+        this.panelUbigeo.setWidthFull();
+        initUbigeo();
         initButtons();
         addClassName("orden-compra-view");
         setSizeFull();
         refreshGrids();
     }
 
-    private void initButtons(){
+    private void initButtons() {
         //configuración de botones
         agregar.addClickListener(event -> add());
         //cancelar.addClickListener(event -> deleteOrdenCompra());
@@ -101,21 +110,31 @@ public class DireccionView extends Div {
         //buttons.setClassName("button-layout");
     }
 
-    private void initDataGrid(){
-        dataGrid.addColumn(OrdenCompraDet::getOrdenCompra,"Orden Compra");
-        dataGrid.addColumn(OrdenCompraDet::getAlmacen,"Almacen");
-        dataGrid.addColumn(OrdenCompraDet::getProducto,"Producto");
-        dataGrid.addColumn(OrdenCompraDet::getCantidad,"Cantidad");
-        dataGrid.addColumn(OrdenCompraDet::getCantidadTg,"Cantidad TG");
-        dataGrid.addColumn(OrdenCompraDet::getDescuento,"Descuento");
-        dataGrid.addColumn(OrdenCompraDet::getFechaVencimiento,"Fecha Vencimiento");
-        dataGrid.addColumn(OrdenCompraDet::getPrecioUnitario,"Precio Unitario");
-        dataGrid.addColumn(OrdenCompraDet::getLote,"Lote");
-        dataGrid.addColumn(OrdenCompraDet::getCantidadUsada,"Cantidad Usada");
-        dataGrid.addColumn(OrdenCompraDet::getTotalDet,"Total");
+    private void initUbigeo(){
+        departamentoComboBox.setItemLabelGenerator(Departamento::getNombre);
+        provinciaComboBox.setItemLabelGenerator(Provincia::getNombre);
+        distritoComboBox.setItemLabelGenerator(Distrito::getNombre);
 
+        departamentoComboBox.setItems(ubigeoService.getAllRegiones());
+        departamentoComboBox.addValueChangeListener(event -> {
+            if (event.getValue() != null) {
+                provinciaComboBox.setItems(ubigeoService.getProvinciasByRegion(event.getValue().getId()));
+                txtnumeroUbigeo.setText("Número de Ubigeo: " + ubigeoService.getNumeroUbigeo(event.getValue().getId(), "region"));
+            }
+        });
 
-        dataGrid.asSingleSelect().addValueChangeListener(evt -> editOrdenCompraDet(evt.getValue()));
+        provinciaComboBox.addValueChangeListener(event -> {
+            if (event.getValue() != null) {
+                distritoComboBox.setItems(ubigeoService.getDistritosByProvincia(event.getValue().getId()));
+                txtnumeroUbigeo.setText("Número de Ubigeo: " + ubigeoService.getNumeroUbigeo(event.getValue().getId(), "provincia"));
+            }
+        });
+
+        distritoComboBox.addValueChangeListener(event -> {
+            if (event.getValue() != null) {
+                txtnumeroUbigeo.setText("Número de Ubigeo: " + ubigeoService.getNumeroUbigeo(event.getValue().getId(), "distrito"));
+            }
+        });
     }
 
     private void refreshGrids() {
@@ -123,8 +142,7 @@ public class DireccionView extends Div {
     }
 
 
-
-    private void add(){
+    private void add() {
 //        OrdenCompraDetView ordenCompra = new OrdenCompraDetView(this.ordenCompraService);
 //        Dialog view = new Dialog();
 //        view.setHeaderTitle("ORDEN DE COMPRA DETALLE");
@@ -133,18 +151,20 @@ public class DireccionView extends Div {
     }
 
 
-    private void deleteOrdenCompra(){
+    private void deleteOrdenCompra() {
         //ordenCompra = dataGrid.getSelectedValue();
-        if (ordenCompra != null) {
-            ordenCompraService.delete(ordenCompra);
-            refreshGrids();
-            Notification.show("Orden de Compra eliminada correctamente");
-        } else {
-            Notification.show("No se pudo eliminar la Orden de Compra");
-        }
+//        if (direccion != null) {
+//            DireccionService.delete(direccion);
+//            refreshGrids();
+//            Notification.show("Orden de Compra eliminada correctamente");
+//        } else {
+//            Notification.show("No se pudo eliminar la Orden de Compra");
+//        }
     }
 
 
-    private void editOrdenCompraDet(OrdenCompraDet ordenCompraDet){
+//    private void editOrdenCompraDet(OrdenCompraDet ordenCompraDet){
+//
+//    }
 
-    }
+}

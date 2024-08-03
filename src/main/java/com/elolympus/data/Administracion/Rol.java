@@ -55,8 +55,8 @@ public class Rol {
     @Column(name = "can_delete", nullable = false)
     private Boolean canDelete;
 
-    @OneToOne
-    private Usuario usuario;
+//    @OneToOne
+//    private Usuario usuario;
 
     @PrePersist
     public void prePersist() {

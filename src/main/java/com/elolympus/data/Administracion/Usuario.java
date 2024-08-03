@@ -48,6 +48,7 @@ public class Usuario {
 
     @OneToOne
     private Persona persona;
+
     @OneToOne
     private Rol rol;
 

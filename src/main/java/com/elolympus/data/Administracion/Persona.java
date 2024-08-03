@@ -61,8 +61,8 @@ public class Persona {
     @OneToOne(cascade = CascadeType.ALL)
     private Direccion direccion;
 
-    @OneToOne
-    private Usuario usuario;
+//    @OneToOne
+//    private Usuario usuario;
 
     @PrePersist
     public void prePersist() {
