@@ -4,6 +4,7 @@ import com.elolympus.component.DataTable;
 import com.elolympus.data.Administracion.Direccion;
 import com.elolympus.data.Administracion.Persona;
 import com.elolympus.services.services.PersonaService;
+import com.elolympus.services.services.UbigeoService;
 import com.elolympus.views.Logistica.OrdenCompraView;
 import com.elolympus.views.MainLayout;
 import com.elolympus.views.direccion.DireccionView;
@@ -46,6 +47,7 @@ import java.util.Optional;
 public class PersonasView2 extends Div implements BeforeEnterObserver{
 
     private final PersonaService PersonaService;
+    private final UbigeoService ubigeoService;
     private BeanValidationBinder<Persona> binder;
     private Persona persona;
     private Direccion direccion;
@@ -78,9 +80,13 @@ public class PersonasView2 extends Div implements BeforeEnterObserver{
 
     public DataTable<Persona> grilla = new DataTable<>();
 
+
+
+
     @Autowired
-    public PersonasView2(PersonaService PersonaService) {
+    public PersonasView2(PersonaService PersonaService, UbigeoService ubigeoService) {
         this.PersonaService = PersonaService;
+        this.ubigeoService = ubigeoService;
         try {
             // Configure Form
             binder = new BeanValidationBinder<>(Persona.class);
@@ -246,7 +252,7 @@ public class PersonasView2 extends Div implements BeforeEnterObserver{
     }
 
     private void getDireccion() {
-        DireccionView direccionView = new DireccionView();
+        DireccionView direccionView = new DireccionView(ubigeoService);
         Dialog view = new Dialog();
         view.setHeaderTitle("DIRECCION");
         view.add(direccionView);
@@ -287,7 +293,7 @@ public class PersonasView2 extends Div implements BeforeEnterObserver{
     }
 
     private void add(){
-        DireccionView ordenCompra = new DireccionView();
+        DireccionView ordenCompra = new DireccionView(ubigeoService);
         Dialog view = new Dialog();
         view.setHeaderTitle("ORDEN DE COMPRA DETALLE");
         view.add(ordenCompra);

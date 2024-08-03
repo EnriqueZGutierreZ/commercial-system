@@ -76,8 +76,8 @@ public class DireccionView extends Div {
     //constructor SOBRECARGADO
 
     //CONTRUCTOR
-    public DireccionView() {
-        this.ubigeoService = new UbigeoService();
+    public DireccionView(UbigeoService ubigeoService) {
+        this.ubigeoService = ubigeoService;
         this.panelUbigeo.add(departamentoComboBox, provinciaComboBox, distritoComboBox , txtnumeroUbigeo);
         this.form.add(Descripcion, Referencia);
         this.panelButton.add(agregar, editar, eliminar, cancelar);

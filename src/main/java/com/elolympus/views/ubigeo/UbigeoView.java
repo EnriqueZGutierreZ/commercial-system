@@ -13,6 +13,8 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import  com.vaadin.flow.component.textfield.TextField;
+
 @PageTitle("Ubigeo")
 @Route(value = "ubigeo", layout = MainLayout.class)
 @AnonymousAllowed
@@ -20,7 +22,7 @@ public class UbigeoView extends VerticalLayout {
     private ComboBox<Departamento> departamentoComboBox = new ComboBox<>("Departamento");
     private ComboBox<Provincia> provinciaComboBox = new ComboBox<>("Provincia");
     private ComboBox<Distrito> distritoComboBox = new ComboBox<>("Distrito");
-    private Label numeroUbigeoLabel = new Label("Número de Ubigeo: ");
+    private TextField numeroUbigeoLabel = new TextField("Número de Ubigeo: ");
 
     @Autowired
     public UbigeoView(UbigeoService ubigeoService) {
@@ -32,20 +34,20 @@ public class UbigeoView extends VerticalLayout {
         departamentoComboBox.addValueChangeListener(event -> {
             if (event.getValue() != null) {
                 provinciaComboBox.setItems(ubigeoService.getProvinciasByRegion(event.getValue().getId()));
-                numeroUbigeoLabel.setText("Número de Ubigeo: " + ubigeoService.getNumeroUbigeo(event.getValue().getId(), "region"));
+                numeroUbigeoLabel.setValue(ubigeoService.getNumeroUbigeo(event.getValue().getId(), "region"));
             }
         });
 
         provinciaComboBox.addValueChangeListener(event -> {
             if (event.getValue() != null) {
                 distritoComboBox.setItems(ubigeoService.getDistritosByProvincia(event.getValue().getId()));
-                numeroUbigeoLabel.setText("Número de Ubigeo: " + ubigeoService.getNumeroUbigeo(event.getValue().getId(), "provincia"));
+                numeroUbigeoLabel.setValue(ubigeoService.getNumeroUbigeo(event.getValue().getId(), "provincia"));
             }
         });
 
         distritoComboBox.addValueChangeListener(event -> {
             if (event.getValue() != null) {
-                numeroUbigeoLabel.setText("Número de Ubigeo: " + ubigeoService.getNumeroUbigeo(event.getValue().getId(), "distrito"));
+                numeroUbigeoLabel.setValue(ubigeoService.getNumeroUbigeo(event.getValue().getId(), "distrito"));
             }
         });
 
