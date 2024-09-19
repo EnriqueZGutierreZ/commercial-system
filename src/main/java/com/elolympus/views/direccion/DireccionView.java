@@ -15,10 +15,10 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -39,7 +39,7 @@ import java.time.LocalDate;
 @PageTitle("Direccion")
 @Route(value = "Direccion", layout = MainLayout.class)
 @PermitAll
-public class DireccionView extends Div {
+public class DireccionView extends Dialog {
 
     private DireccionService direccionService;
     private UbigeoService ubigeoService;
@@ -69,8 +69,8 @@ public class DireccionView extends Div {
     //TEXTFIELD UI Direccion
 
     private final Text titulo = new Text("DIRECCION");
-    private final TextField Descripcion = new TextField("Descripcion");
-    private final TextField Referencia = new TextField("Referencia");
+    private final TextField txtDescripcion = new TextField("Descripcion");
+    private final TextField txtReferencia = new TextField("Referencia");
     private final FormLayout form = new FormLayout();
 
     //constructor SOBRECARGADO
@@ -79,7 +79,7 @@ public class DireccionView extends Div {
     public DireccionView(UbigeoService ubigeoService) {
         this.ubigeoService = ubigeoService;
         this.panelUbigeo.add(departamentoComboBox, provinciaComboBox, distritoComboBox , txtnumeroUbigeo);
-        this.form.add(Descripcion, Referencia);
+        this.form.add(txtDescripcion, txtReferencia);
         this.panelButton.add(agregar, editar, eliminar, cancelar);
         this.panel.add(panelUbigeo,form, panelButton);
         this.add(panel);
@@ -95,18 +95,21 @@ public class DireccionView extends Div {
         initUbigeo();
         initButtons();
         addClassName("orden-compra-view");
-        setSizeFull();
+        //setSizeFull();
         refreshGrids();
     }
 
     private void initButtons() {
         //configuración de botones
         agregar.addClickListener(event -> add());
-        //cancelar.addClickListener(event -> deleteOrdenCompra());
+        cancelar.addClickListener(event -> this.close());
         eliminar.addClickListener(event -> deleteOrdenCompra());
         agregar.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         cancelar.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         eliminar.addThemeVariants(ButtonVariant.LUMO_ERROR);
+        departamentoComboBox.setPlaceholder("Selec. Departamento");
+        provinciaComboBox.setPlaceholder("Selec. Provincia");
+        distritoComboBox.setPlaceholder("Selec. Distrito");
         //buttons.setClassName("button-layout");
     }
 
@@ -143,6 +146,10 @@ public class DireccionView extends Div {
 
 
     private void add() {
+        Direccion direccion = new Direccion();
+        direccion.setDescripcion(txtDescripcion.getValue());
+        direccion.setReferencia(txtReferencia.getValue());
+//        direccion.setUbigeo(ubigeoService.getAllRegiones());
 //        OrdenCompraDetView ordenCompra = new OrdenCompraDetView(this.ordenCompraService);
 //        Dialog view = new Dialog();
 //        view.setHeaderTitle("ORDEN DE COMPRA DETALLE");

@@ -253,12 +253,21 @@ public class PersonasView2 extends Div implements BeforeEnterObserver{
 
     private void getDireccion() {
         DireccionView direccionView = new DireccionView(ubigeoService);
-        Dialog view = new Dialog();
-        view.setHeaderTitle("DIRECCION");
-        view.add(direccionView);
-        view.open();
-        this.direccion = direccionView.direccion;
-        this.txtdireccion.setValue(direccionView.direccion.toString());
+//        Dialog view = new Dialog();
+        direccionView.setHeaderTitle("DIRECCION");
+//        direccionView.add(direccionView);
+        direccionView.addDialogCloseActionListener(e -> {
+            if (direccionView.direccion != null) {
+                this.direccion = direccionView.direccion;
+                this.txtdireccion.setValue(direccionView.direccion.toString());
+            } else {
+                // Manejo de caso donde la dirección es null
+                Notification.show("No se ha seleccionado ninguna dirección.");
+            }
+        });
+        direccionView.open();
+//        this.direccion = direccionView.direccion;
+//        this.txtdireccion.setValue(direccionView.direccion.toString());
     }
 
 

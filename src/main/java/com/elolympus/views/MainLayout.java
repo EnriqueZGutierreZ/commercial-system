@@ -89,7 +89,6 @@ public class MainLayout extends AppLayout {
 
         SideNav nav = new SideNav();
 
-
         //VENTAS
         if (accessChecker.hasAccess(BienvenidaView.class)){
             SideNavItem ventas = new SideNavItem("Ventas");
@@ -235,7 +234,6 @@ public class MainLayout extends AppLayout {
             Anchor loginLink = new Anchor("login", "Sign in");
             layout.add(loginLink);
         }
-
         return layout;
     }
 

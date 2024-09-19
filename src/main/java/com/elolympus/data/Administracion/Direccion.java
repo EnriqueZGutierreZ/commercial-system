@@ -46,11 +46,11 @@ public class Direccion {
     @Column(name = "referencia", length = 200, nullable = false)
     public String referencia;
 
-    @OneToOne(mappedBy = "direccion")
-    private Sucursal sucursal;
-
-    @OneToOne(mappedBy = "direccion")
-    private Persona persona;
+//    @OneToOne(mappedBy = "direccion")
+//    private Sucursal sucursal;
+//
+//    @OneToOne(mappedBy = "direccion")
+//    private Persona persona;
 
     @OneToOne
     public Ubigeo ubigeo;
