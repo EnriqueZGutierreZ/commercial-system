@@ -3,6 +3,7 @@ package com.elolympus.data.Administracion;
 import com.elolympus.data.AbstractEntity;
 import com.elolympus.data.Auxiliar.CCA;
 import com.elolympus.security.SecurityUtils;
+import com.vaadin.flow.data.binder.Binder;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,7 +19,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Entity
 @Table(name = "persona", schema = "administracion")
-public class Persona {
+public class Persona{
 
     //public AuthenticatedUser authenticatedUser;
     //++++++++++++++++++++++++++++ICCA+++++++++++++++++++++++++++++
@@ -64,7 +65,6 @@ public class Persona {
 //    @OneToOne
 //    private Usuario usuario;
 
-    @PrePersist
     public void prePersist() {
         CCA cca     = new CCA();
         this.creado = cca.getCreado();
@@ -75,6 +75,7 @@ public class Persona {
     // Método para obtener el nombre completo
     public String getNombreCompleto() {
         return nombres + " " + apellidos;
+
     }
 
 }

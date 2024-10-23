@@ -63,6 +63,7 @@ public class MainLayout extends AppLayout {
         setPrimarySection(Section.DRAWER);
         addDrawerContent();
         addHeaderContent();
+
     }
 
     private void addHeaderContent() {

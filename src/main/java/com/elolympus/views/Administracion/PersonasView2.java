@@ -234,7 +234,6 @@ public class PersonasView2 extends Div implements BeforeEnterObserver{
             if (this.persona == null) {
                 this.persona = new Persona();
             }else{this.persona.setActivo(false);}
-
             binder.writeBean(this.persona);
             PersonaService.update(this.persona);
             clearForm();

@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
@@ -12,19 +13,20 @@ import java.time.LocalDateTime;
  * Created by [EnriqueZGutierreZ]
  */
 //Constructor Vacio - get - set - equals - toString
-@EqualsAndHashCode(callSuper = true)
+
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "ubigeo", schema = "auxiliar")
-public class Ubigeo extends AbstractEntity {
+public class Ubigeo{
 
     @Id
     @SequenceGenerator(
             name            =   "ubigeo_sequence",
             sequenceName    =   "ubigeo_sequence",
             allocationSize  =   1,
-            initialValue    =   1
+            initialValue    =   10
     )
     @GeneratedValue(
             strategy        =   GenerationType.SEQUENCE,

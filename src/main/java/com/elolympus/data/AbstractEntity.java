@@ -1,52 +1,45 @@
 package com.elolympus.data;
 
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.MappedSuperclass;
-import jakarta.persistence.SequenceGenerator;
-import jakarta.persistence.Version;
+import com.elolympus.data.Auxiliar.CCA;
+import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+
+@Data
 @MappedSuperclass
 public abstract class AbstractEntity {
 
+    //++++++++++++++++++++++++++++ICCA+++++++++++++++++++++++++++++
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idgenerator")
+    @GeneratedValue(
+            strategy = GenerationType.SEQUENCE,
+            generator = "idgenerator")
     // The initial value is to account for data.sql demo data ids
-    @SequenceGenerator(name = "idgenerator", initialValue = 1000)
+    @SequenceGenerator(
+            name = "idgenerator",
+            initialValue = 100)
     private Long id;
 
+    @Column(name = "creado", nullable = false)
+    private LocalDateTime creado;
+    @Column(name = "creador", length = 200, nullable = false)
+    private String creador;
+    @Column(name = "activo", nullable = false)
+    private boolean activo;
     @Version
-    private int version;
+    private Long version;
+    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    public Long getId() {
-        return id;
+    @PrePersist
+    public void prePersist() {
+        CCA cca     = new CCA();
+        this.creado = cca.getCreado();
+        this.creador= cca.getCreador();
+        this.activo = cca.getActivo();
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public int getVersion() {
-        return version;
-    }
-
-    @Override
-    public int hashCode() {
-        if (getId() != null) {
-            return getId().hashCode();
-        }
-        return super.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof AbstractEntity that)) {
-            return false; // null or not an AbstractEntity class
-        }
-        if (getId() != null) {
-            return getId().equals(that.getId());
-        }
-        return super.equals(that);
-    }
 }
