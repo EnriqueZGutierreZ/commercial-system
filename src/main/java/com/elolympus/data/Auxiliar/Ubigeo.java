@@ -41,6 +41,6 @@ public class Ubigeo{
     private String provincia;
     @Column(name = "distrito", nullable = false)
     private String distrito;
-    @Column(name = "descripcion", nullable = false)
+    @Column(name = "descripcion", nullable = true)
     private String descripcion;
 }

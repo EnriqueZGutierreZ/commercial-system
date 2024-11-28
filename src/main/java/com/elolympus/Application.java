@@ -1,10 +1,14 @@
 package com.elolympus;
 
 import com.elolympus.data.samples.SamplePersonRepository;
+import com.elolympus.services.services.UbigeoService;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.theme.Theme;
 import javax.sql.DataSource;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.sql.init.SqlDataSourceScriptDatabaseInitializer;
@@ -21,7 +25,10 @@ import org.springframework.context.annotation.Bean;
 @SpringBootApplication
 @Theme(value = "sistemacomercial")
 @Push
-public class Application implements AppShellConfigurator {
+public class Application implements AppShellConfigurator, CommandLineRunner {
+
+    @Autowired
+    private UbigeoService ubigeoService;
 
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
@@ -40,5 +47,10 @@ public class Application implements AppShellConfigurator {
                 return false;
             }
         };
+    }
+
+    @Override
+    public void run(String... args) throws Exception {
+        ubigeoService.cargarUbigeosDesdeJson();
     }
 }
