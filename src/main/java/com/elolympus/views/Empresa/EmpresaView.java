@@ -69,7 +69,17 @@ public class EmpresaView extends Div {
     private void setupGrid() {
         gridempresa.addClassName("empresa-grid");
         gridempresa.setSizeFull();
-        gridempresa.setColumns("folderTemps", "folderReports", "allowBuyWithoutStock", "requireSalesPin", "documentoTipoXdefecto", "logoEnterprise", "logoWidth", "commercialName");
+        
+        // Definir columnas manualmente con los nombres correctos de las propiedades
+        gridempresa.addColumn(Empresa::getFolderTemps).setHeader("Carpeta Temps");
+        gridempresa.addColumn(Empresa::getFolderReports).setHeader("Carpeta Reportes");
+        gridempresa.addColumn(Empresa::getAllowBuyWithoutStock).setHeader("Permitir Compra Sin Stock");
+        gridempresa.addColumn(Empresa::getRequireSalesPin).setHeader("Requerir PIN Ventas");
+        gridempresa.addColumn(Empresa::getDocumentoTipoXdefecto).setHeader("Tipo Documento X Defecto");
+        gridempresa.addColumn(Empresa::getLogoEnterprise).setHeader("Logo Empresa");
+        gridempresa.addColumn(Empresa::getLogoWidth).setHeader("Ancho Logo");
+        gridempresa.addColumn(Empresa::getCommercialName).setHeader("Nombre Comercial");
+        
         gridempresa.getColumns().forEach(col -> col.setAutoWidth(true));
         gridempresa.asSingleSelect().addValueChangeListener(evt -> editEmpresa(evt.getValue()));
     }
