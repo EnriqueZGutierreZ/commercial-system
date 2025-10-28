@@ -19,27 +19,7 @@ import java.util.Objects;
 @AllArgsConstructor
 @Entity
 @Table(name = "usuario", schema = "administracion")
-public class Usuario {
-    //++++++++++++++++++++++++++++ICCA+++++++++++++++++++++++++++++
-    @Id
-    @SequenceGenerator(
-            name            =   "usuario_sequence",
-            sequenceName    =   "usuario_sequence",
-            allocationSize  =   1,
-            initialValue    =   1
-    )
-    @GeneratedValue(
-            strategy        =   GenerationType.SEQUENCE,
-            generator       =   "usuario_sequence"
-    )
-    private Long id;
-    @Column(name = "creado", nullable = false)
-    private LocalDateTime creado;
-    @Column(name = "creador", length = 200, nullable = false)
-    private String creador;
-    @Column(name = "activo", nullable = false)
-    private boolean activo;
-    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+public class Usuario extends AbstractEntity {
     @Column(name = "usuario", length = 50, nullable = false)
     private String usuario;
     @JsonIgnore
@@ -51,12 +31,47 @@ public class Usuario {
 
     @OneToOne
     private Rol rol;
-
-    @PrePersist
-    public void prePersist() {
-        CCA cca     = new CCA();
-        this.creado = cca.getCreado();
-        this.creador= cca.getCreador();
-        this.activo = cca.getActivo();
+    
+    // Getters y setters manuales por si Lombok no funciona
+    public String getUsuario() {
+        return usuario;
+    }
+    
+    public void setUsuario(String usuario) {
+        this.usuario = usuario;
+    }
+    
+    public String getPassword() {
+        return password;
+    }
+    
+    public void setPassword(String password) {
+        this.password = password;
+    }
+    
+    public Persona getPersona() {
+        return persona;
+    }
+    
+    public void setPersona(Persona persona) {
+        this.persona = persona;
+    }
+    
+    public Rol getRol() {
+        return rol;
+    }
+    
+    public void setRol(Rol rol) {
+        this.rol = rol;
+    }
+    
+    // Método getId() necesario para las vistas
+    public Long getId() {
+        return super.getId();
+    }
+    
+    // Método isActivo() necesario para las vistas
+    public boolean isActivo() {
+        return super.isActivo();
     }
 }

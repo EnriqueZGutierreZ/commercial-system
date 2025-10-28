@@ -66,5 +66,10 @@ public class SamplePerson extends AbstractEntity {
     public void setImportant(boolean important) {
         this.important = important;
     }
+    
+    // Método getId() necesario para las vistas
+    public Long getId() {
+        return super.getId();
+    }
 
 }

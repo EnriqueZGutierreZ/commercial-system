@@ -19,29 +19,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Entity
 @Table(name = "persona", schema = "administracion")
-public class Persona{
-
-    //public AuthenticatedUser authenticatedUser;
-    //++++++++++++++++++++++++++++ICCA+++++++++++++++++++++++++++++
-    @Id
-    @SequenceGenerator(
-            name            =   "persona_sequence",
-            sequenceName    =   "persona_sequence",
-            allocationSize  =   1,
-            initialValue    =   1
-    )
-    @GeneratedValue(
-            strategy        =   GenerationType.SEQUENCE,
-            generator       =   "persona_sequence"
-    )
-    private Long id;
-    @Column(name = "creado", nullable = false)
-    private LocalDateTime creado;
-    @Column(name = "creador", length = 200, nullable = false)
-    private String creador;
-    @Column(name = "activo", nullable = false)
-    private boolean activo;
-    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+public class Persona extends AbstractEntity {
 
     @Column(name = "apellidos", length = 250, nullable = false)
     private String apellidos;
@@ -65,17 +43,57 @@ public class Persona{
 //    @OneToOne
 //    private Usuario usuario;
 
-    public void prePersist() {
-        CCA cca     = new CCA();
-        this.creado = cca.getCreado();
-        this.creador= cca.getCreador();
-        this.activo = cca.getActivo();
-    }
 
     // Método para obtener el nombre completo
     public String getNombreCompleto() {
         return nombres + " " + apellidos;
 
+    }
+    
+    // Getters y setters manuales por si Lombok no funciona
+    public String getNombres() {
+        return nombres;
+    }
+    
+    public void setNombres(String nombres) {
+        this.nombres = nombres;
+    }
+    
+    public String getApellidos() {
+        return apellidos;
+    }
+    
+    public void setApellidos(String apellidos) {
+        this.apellidos = apellidos;
+    }
+    
+    public Integer getNum_documento() {
+        return num_documento;
+    }
+    
+    public void setNum_documento(Integer num_documento) {
+        this.num_documento = num_documento;
+    }
+    
+    public Integer getCelular() {
+        return celular;
+    }
+    
+    public void setCelular(Integer celular) {
+        this.celular = celular;
+    }
+    
+    public boolean isActivo() {
+        return super.isActivo();
+    }
+    
+    public void setActivo(boolean activo) {
+        super.setActivo(activo);
+    }
+    
+    // Método getId() necesario para las vistas
+    public Long getId() {
+        return super.getId();
     }
 
 }

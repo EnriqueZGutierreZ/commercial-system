@@ -98,6 +98,143 @@ public class OrdenCompra extends AbstractEntity {
         this.creador= cca.getCreador();
         this.activo = cca.getActivo();
     }
+    
+    // Getters y setters manuales por si Lombok no funciona
+    public Integer getAlmacenEntrega() {
+        return almacenEntrega;
+    }
+    
+    public void setAlmacenEntrega(Integer almacenEntrega) {
+        this.almacenEntrega = almacenEntrega;
+    }
+    
+    public Integer getNumeroProveedor() {
+        return numeroProveedor;
+    }
+    
+    public void setNumeroProveedor(Integer numeroProveedor) {
+        this.numeroProveedor = numeroProveedor;
+    }
+    
+    public Integer getDireccionProveedor() {
+        return direccionProveedor;
+    }
+    
+    public void setDireccionProveedor(Integer direccionProveedor) {
+        this.direccionProveedor = direccionProveedor;
+    }
+    
+    public Date getFecha() {
+        return fecha;
+    }
+    
+    public void setFecha(Date fecha) {
+        this.fecha = fecha;
+    }
+    
+    public Date getFechaEntrega() {
+        return fechaEntrega;
+    }
+    
+    public void setFechaEntrega(Date fechaEntrega) {
+        this.fechaEntrega = fechaEntrega;
+    }
+    
+    public Integer getFormaPago() {
+        return formaPago;
+    }
+    
+    public void setFormaPago(Integer formaPago) {
+        this.formaPago = formaPago;
+    }
+    
+    public Integer getMoneda() {
+        return moneda;
+    }
+    
+    public void setMoneda(Integer moneda) {
+        this.moneda = moneda;
+    }
+    
+    public Integer getImpuesto() {
+        return impuesto;
+    }
+    
+    public void setImpuesto(Integer impuesto) {
+        this.impuesto = impuesto;
+    }
+    
+    public BigDecimal getTotal() {
+        return total;
+    }
+    
+    public void setTotal(BigDecimal total) {
+        this.total = total;
+    }
+    
+    public String getObservaciones() {
+        return observaciones;
+    }
+    
+    public void setObservaciones(String observaciones) {
+        this.observaciones = observaciones;
+    }
+    
+    public BigDecimal getTotalCobrado() {
+        return totalCobrado;
+    }
+    
+    public void setTotalCobrado(BigDecimal totalCobrado) {
+        this.totalCobrado = totalCobrado;
+    }
+    
+    public BigDecimal getTipoCambio() {
+        return tipoCambio;
+    }
+    
+    public void setTipoCambio(BigDecimal tipoCambio) {
+        this.tipoCambio = tipoCambio;
+    }
+    
+    public Integer getDiasCredito() {
+        return diasCredito;
+    }
+    
+    public void setDiasCredito(Integer diasCredito) {
+        this.diasCredito = diasCredito;
+    }
+    
+    public Integer getSucursal() {
+        return sucursal;
+    }
+    
+    public void setSucursal(Integer sucursal) {
+        this.sucursal = sucursal;
+    }
+    
+    public Boolean getImpuesto_incluido() {
+        return impuesto_incluido;
+    }
+    
+    public void setImpuesto_incluido(Boolean impuesto_incluido) {
+        this.impuesto_incluido = impuesto_incluido;
+    }
+    
+    public String getDocumento_pago() {
+        return documento_pago;
+    }
+    
+    public void setDocumento_pago(String documento_pago) {
+        this.documento_pago = documento_pago;
+    }
+    
+    public List<OrdenCompraDet> getDetalles() {
+        return detalles;
+    }
+    
+    public void setDetalles(List<OrdenCompraDet> detalles) {
+        this.detalles = detalles;
+    }
 
 
 

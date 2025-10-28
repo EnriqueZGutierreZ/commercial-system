@@ -18,27 +18,7 @@ import java.util.Objects;
 @AllArgsConstructor
 @Entity
 @Table(name = "rol", schema = "administracion")
-public class Rol {
-    //++++++++++++++++++++++++++++ICCA+++++++++++++++++++++++++++++
-    @Id
-    @SequenceGenerator(
-            name            =   "rol_sequence",
-            sequenceName    =   "rol_sequence",
-            allocationSize  =   1,
-            initialValue    =   1
-    )
-    @GeneratedValue(
-            strategy        =   GenerationType.SEQUENCE,
-            generator       =   "rol_sequence"
-    )
-    private Long id;
-    @Column(name = "creado", nullable = false)
-    private LocalDateTime creado;
-    @Column(name = "creador", length = 200, nullable = false)
-    private String creador;
-    @Column(name = "activo", nullable = false)
-    private boolean activo;
-    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+public class Rol extends AbstractEntity {
     @Column(name = "area", length = 100, nullable = false)
     private String area;
     @Column(name = "cargo", length = 100, nullable = false)
@@ -54,16 +34,66 @@ public class Rol {
     private Boolean canUpdate;
     @Column(name = "can_delete", nullable = false)
     private Boolean canDelete;
+    
+    // Getters y setters manuales por si Lombok no funciona
+    public String getArea() {
+        return area;
+    }
+    
+    public void setArea(String area) {
+        this.area = area;
+    }
+    
+    public String getCargo() {
+        return cargo;
+    }
+    
+    public void setCargo(String cargo) {
+        this.cargo = cargo;
+    }
+    
+    public String getDescripcion() {
+        return descripcion;
+    }
+    
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
+    
+    public Boolean getCanCreate() {
+        return canCreate;
+    }
+    
+    public void setCanCreate(Boolean canCreate) {
+        this.canCreate = canCreate;
+    }
+    
+    public Boolean getCanRead() {
+        return canRead;
+    }
+    
+    public void setCanRead(Boolean canRead) {
+        this.canRead = canRead;
+    }
+    
+    public Boolean getCanUpdate() {
+        return canUpdate;
+    }
+    
+    public void setCanUpdate(Boolean canUpdate) {
+        this.canUpdate = canUpdate;
+    }
+    
+    public Boolean getCanDelete() {
+        return canDelete;
+    }
+    
+    public void setCanDelete(Boolean canDelete) {
+        this.canDelete = canDelete;
+    }
 
 //    @OneToOne
 //    private Usuario usuario;
 
-    @PrePersist
-    public void prePersist() {
-        CCA cca     = new CCA();
-        this.creado = cca.getCreado();
-        this.creador= cca.getCreador();
-        this.activo = cca.getActivo();
-    }
 
 }

@@ -53,4 +53,101 @@ public class OrdenCompraDet extends AbstractEntity {
 
     @Column(name = "cantidad_fraccion")
     private BigDecimal cantidadFraccion;
+    
+    // Getters y setters manuales por si Lombok no funciona
+    public OrdenCompra getOrdenCompra() {
+        return ordenCompra;
+    }
+    
+    public void setOrdenCompra(OrdenCompra ordenCompra) {
+        this.ordenCompra = ordenCompra;
+    }
+    
+    public Integer getProducto() {
+        return producto;
+    }
+    
+    public void setProducto(Integer producto) {
+        this.producto = producto;
+    }
+    
+    public BigDecimal getCantidad() {
+        return cantidad;
+    }
+    
+    public void setCantidad(BigDecimal cantidad) {
+        this.cantidad = cantidad;
+    }
+    
+    public BigDecimal getPrecioUnitario() {
+        return precioUnitario;
+    }
+    
+    public void setPrecioUnitario(BigDecimal precioUnitario) {
+        this.precioUnitario = precioUnitario;
+    }
+    
+    public BigDecimal getTotalDet() {
+        return totalDet;
+    }
+    
+    public void setTotalDet(BigDecimal totalDet) {
+        this.totalDet = totalDet;
+    }
+    
+    public BigDecimal getDescuento() {
+        return descuento;
+    }
+    
+    public void setDescuento(BigDecimal descuento) {
+        this.descuento = descuento;
+    }
+    
+    public Integer getAlmacen() {
+        return almacen;
+    }
+    
+    public void setAlmacen(Integer almacen) {
+        this.almacen = almacen;
+    }
+    
+    public BigDecimal getCantidadTg() {
+        return cantidadTg;
+    }
+    
+    public void setCantidadTg(BigDecimal cantidadTg) {
+        this.cantidadTg = cantidadTg;
+    }
+    
+    public String getLote() {
+        return lote;
+    }
+    
+    public void setLote(String lote) {
+        this.lote = lote;
+    }
+    
+    public Date getFechaVencimiento() {
+        return fechaVencimiento;
+    }
+    
+    public void setFechaVencimiento(Date fechaVencimiento) {
+        this.fechaVencimiento = fechaVencimiento;
+    }
+    
+    public BigDecimal getCantidadUsada() {
+        return cantidadUsada;
+    }
+    
+    public void setCantidadUsada(BigDecimal cantidadUsada) {
+        this.cantidadUsada = cantidadUsada;
+    }
+    
+    public BigDecimal getCantidadFraccion() {
+        return cantidadFraccion;
+    }
+    
+    public void setCantidadFraccion(BigDecimal cantidadFraccion) {
+        this.cantidadFraccion = cantidadFraccion;
+    }
 }

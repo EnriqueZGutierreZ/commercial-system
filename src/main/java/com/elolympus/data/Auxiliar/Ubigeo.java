@@ -43,4 +43,53 @@ public class Ubigeo{
     private String distrito;
     @Column(name = "descripcion", nullable = true)
     private String descripcion;
+    
+    // Getters y setters manuales por si Lombok no funciona
+    public Long getId() {
+        return id;
+    }
+    
+    public void setId(Long id) {
+        this.id = id;
+    }
+    
+    public String getCodigo() {
+        return codigo;
+    }
+    
+    public void setCodigo(String codigo) {
+        this.codigo = codigo;
+    }
+    
+    public String getDepartamento() {
+        return departamento;
+    }
+    
+    public void setDepartamento(String departamento) {
+        this.departamento = departamento;
+    }
+    
+    public String getProvincia() {
+        return provincia;
+    }
+    
+    public void setProvincia(String provincia) {
+        this.provincia = provincia;
+    }
+    
+    public String getDistrito() {
+        return distrito;
+    }
+    
+    public void setDistrito(String distrito) {
+        this.distrito = distrito;
+    }
+    
+    public String getDescripcion() {
+        return descripcion;
+    }
+    
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
 }

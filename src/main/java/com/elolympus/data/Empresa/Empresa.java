@@ -15,28 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @Table(name = "empresa", schema = "empresa")
-public class Empresa{
-
-    //++++++++++++++++++++++++++++ICCA+++++++++++++++++++++++++++++
-    @Id
-    @SequenceGenerator(
-            name            =   "empresa_sequence",
-            sequenceName    =   "empresa_sequence",
-            allocationSize  =   1,
-            initialValue    =   1
-    )
-    @GeneratedValue(
-            strategy        =   GenerationType.SEQUENCE,
-            generator       =   "empresa_sequence"
-    )
-    private Long id;
-    @Column(name = "creado", nullable = false)
-    private LocalDateTime creado;
-    @Column(name = "creador", length = 200, nullable = false)
-    private String creador;
-    @Column(name = "activo", nullable = false)
-    private Boolean activo;
-    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+public class Empresa extends AbstractEntity {
 //    @Column(name = "sucursal", nullable = false)
 //    private Integer sucursal;
 //    @Column(name = "direccion")
@@ -68,12 +47,5 @@ public class Empresa{
     @Column(name = "commercial_name")
     private String commercialName;
 
-    @PrePersist
-    public void prePersist() {
-        CCA cca     = new CCA();
-        this.creado = cca.getCreado();
-        this.creador= cca.getCreador();
-        this.activo = cca.getActivo();
-    }
 
 }

@@ -34,7 +34,6 @@ public class EmpresaView extends Div {
 
     //Componentes UI
     private final Grid<Empresa> gridempresa = new Grid<>(Empresa.class, false);
-    private final IntegerField direccion = new IntegerField("Direccion");
     private final TextField folderTemps = new TextField("Informes de carpeta");
     private final TextField folderReports = new TextField("Informes de carpeta");
     private final Checkbox allowBuyWithoutStock = new Checkbox("Permitir comprar sin stock");
@@ -70,7 +69,7 @@ public class EmpresaView extends Div {
     private void setupGrid() {
         gridempresa.addClassName("empresa-grid");
         gridempresa.setSizeFull();
-        gridempresa.setColumns("direccion", "folderTemps", "folderReports", "allowBuyWithoutStock", "requireSalesPin", "documentoTipoXdefecto", "logoEnterprise", "logoWidth", "commercialName");
+        gridempresa.setColumns("folderTemps", "folderReports", "allowBuyWithoutStock", "requireSalesPin", "documentoTipoXdefecto", "logoEnterprise", "logoWidth", "commercialName");
         gridempresa.getColumns().forEach(col -> col.setAutoWidth(true));
         gridempresa.asSingleSelect().addValueChangeListener(evt -> editEmpresa(evt.getValue()));
     }
@@ -82,7 +81,7 @@ public class EmpresaView extends Div {
         Div div = new Div();
         div.setClassName("editor");
         editorDiv.add(div);
-        formLayout.add(direccion, folderTemps, folderReports, allowBuyWithoutStock, requireSalesPin, documentoTipoXdefecto, logoEnterprise, logoWidth, commercialName);
+        formLayout.add(folderTemps, folderReports, allowBuyWithoutStock, requireSalesPin, documentoTipoXdefecto, logoEnterprise, logoWidth, commercialName);
         save.addClickListener(event -> save());
         cancel.addClickListener(event -> clearForm());
         delete.addClickListener(event -> delete());
