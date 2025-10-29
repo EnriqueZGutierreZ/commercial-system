@@ -70,7 +70,7 @@ public class EmpresaView extends Div {
     private void setupGrid() {
         gridempresa.addClassName("empresa-grid");
         gridempresa.setSizeFull();
-        gridempresa.setColumns("direccion", "folderTemps", "folderReports", "allowBuyWithoutStock", "requireSalesPin", "documentoTipoXdefecto", "logoEnterprise", "logoWidth", "commercialName");
+        gridempresa.setColumns("folderTemps", "folderReports", "allowBuyWithoutStock", "requireSalesPin", "documentoTipoXdefecto", "logoEnterprise", "logoWidth", "commercialName");
         gridempresa.getColumns().forEach(col -> col.setAutoWidth(true));
         gridempresa.asSingleSelect().addValueChangeListener(evt -> editEmpresa(evt.getValue()));
     }

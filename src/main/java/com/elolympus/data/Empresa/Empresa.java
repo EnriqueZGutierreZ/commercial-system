@@ -75,5 +75,4 @@ public class Empresa{
         this.creador= cca.getCreador();
         this.activo = cca.getActivo();
     }
-
 }
