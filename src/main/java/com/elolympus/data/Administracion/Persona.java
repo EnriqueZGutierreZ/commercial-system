@@ -50,50 +50,20 @@ public class Persona extends AbstractEntity {
 
     }
     
-    // Getters y setters manuales por si Lombok no funciona
-    public String getNombres() {
-        return nombres;
+    // Método getId() necesario para las vistas
+    @Override
+    public Long getId() {
+        return super.getId();
     }
     
-    public void setNombres(String nombres) {
-        this.nombres = nombres;
-    }
-    
-    public String getApellidos() {
-        return apellidos;
-    }
-    
-    public void setApellidos(String apellidos) {
-        this.apellidos = apellidos;
-    }
-    
-    public Integer getNum_documento() {
-        return num_documento;
-    }
-    
-    public void setNum_documento(Integer num_documento) {
-        this.num_documento = num_documento;
-    }
-    
-    public Integer getCelular() {
-        return celular;
-    }
-    
-    public void setCelular(Integer celular) {
-        this.celular = celular;
-    }
-    
+    @Override
     public boolean isActivo() {
         return super.isActivo();
     }
     
+    @Override
     public void setActivo(boolean activo) {
         super.setActivo(activo);
-    }
-    
-    // Método getId() necesario para las vistas
-    public Long getId() {
-        return super.getId();
     }
 
 }

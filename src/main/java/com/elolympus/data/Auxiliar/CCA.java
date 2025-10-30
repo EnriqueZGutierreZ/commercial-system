@@ -17,31 +17,6 @@ public class CCA {
     private Boolean activo;
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     
-    // Getters y setters manuales por si Lombok no funciona
-    public LocalDateTime getCreado() {
-        return creado;
-    }
-    
-    public void setCreado(LocalDateTime creado) {
-        this.creado = creado;
-    }
-    
-    public String getCreador() {
-        return creador;
-    }
-    
-    public void setCreador(String creador) {
-        this.creador = creador;
-    }
-    
-    public Boolean getActivo() {
-        return activo;
-    }
-    
-    public void setActivo(Boolean activo) {
-        this.activo = activo;
-    }
-
     public CCA() {
         this.creado = LocalDateTime.now();
         try {

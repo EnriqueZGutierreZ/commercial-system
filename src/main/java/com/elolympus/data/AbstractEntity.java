@@ -42,45 +42,4 @@ public abstract class AbstractEntity {
         this.activo = cca.getActivo();
     }
     
-    // Getters y setters manuales por si Lombok no funciona
-    public Long getId() {
-        return id;
-    }
-    
-    public void setId(Long id) {
-        this.id = id;
-    }
-    
-    public LocalDateTime getCreado() {
-        return creado;
-    }
-    
-    public void setCreado(LocalDateTime creado) {
-        this.creado = creado;
-    }
-    
-    public String getCreador() {
-        return creador;
-    }
-    
-    public void setCreador(String creador) {
-        this.creador = creador;
-    }
-    
-    public boolean isActivo() {
-        return activo;
-    }
-    
-    public void setActivo(boolean activo) {
-        this.activo = activo;
-    }
-    
-    public Long getVersion() {
-        return version;
-    }
-    
-    public void setVersion(Long version) {
-        this.version = version;
-    }
-
 }

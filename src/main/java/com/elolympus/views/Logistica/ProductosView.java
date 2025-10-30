@@ -19,7 +19,7 @@ public class ProductosView extends HorizontalLayout {
     private Button sayHello;
 
     public ProductosView() {
-        name = new TextField("Prodcutos");
+        name = new TextField("Productos");
         sayHello = new Button("Say hello");
         sayHello.addClickListener(e -> {
             Notification.show("Hello " + name.getValue());

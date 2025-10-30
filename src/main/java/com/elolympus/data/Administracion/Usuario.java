@@ -32,45 +32,13 @@ public class Usuario extends AbstractEntity {
     @OneToOne
     private Rol rol;
     
-    // Getters y setters manuales por si Lombok no funciona
-    public String getUsuario() {
-        return usuario;
-    }
-    
-    public void setUsuario(String usuario) {
-        this.usuario = usuario;
-    }
-    
-    public String getPassword() {
-        return password;
-    }
-    
-    public void setPassword(String password) {
-        this.password = password;
-    }
-    
-    public Persona getPersona() {
-        return persona;
-    }
-    
-    public void setPersona(Persona persona) {
-        this.persona = persona;
-    }
-    
-    public Rol getRol() {
-        return rol;
-    }
-    
-    public void setRol(Rol rol) {
-        this.rol = rol;
-    }
-    
-    // Método getId() necesario para las vistas
+    // Métodos necesarios para las vistas
+    @Override
     public Long getId() {
         return super.getId();
     }
     
-    // Método isActivo() necesario para las vistas
+    @Override
     public boolean isActivo() {
         return super.isActivo();
     }
