@@ -16,6 +16,7 @@ import java.util.Objects;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 @Entity
 @Table(name = "rol", schema = "administracion")
 public class Rol extends AbstractEntity {

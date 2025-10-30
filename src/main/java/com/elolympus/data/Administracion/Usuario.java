@@ -17,6 +17,7 @@ import java.util.Objects;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 @Entity
 @Table(name = "usuario", schema = "administracion")
 public class Usuario extends AbstractEntity {

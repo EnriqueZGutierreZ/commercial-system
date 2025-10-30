@@ -22,6 +22,7 @@ import java.util.List;
 @PageTitle("Direccion")
 @Route(value = "address-form", layout = MainLayout.class)
 @AnonymousAllowed
+@SuppressWarnings("unchecked")
 public class Direccion2View extends Composite<VerticalLayout> {
 
     public Direccion2View() {

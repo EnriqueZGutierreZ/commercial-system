@@ -1,7 +1,7 @@
 package com.elolympus.data.Empresa;
 
 import com.elolympus.data.AbstractEntity;
-import com.elolympus.data.Auxiliar.CCA;
+//import com.elolympus.data.Auxiliar.CCA;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,8 +20,8 @@ import java.util.List;
 public class Empresa extends AbstractEntity {
 //    @Column(name = "sucursal", nullable = false)
 //    private Integer sucursal;
-//    @Column(name = "direccion")
-//    private Integer direccion;
+    @Column(name = "direccion")
+    private Integer direccion;
     @OneToMany(mappedBy = "empresa", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Sucursal> sucursales;
 

@@ -34,6 +34,7 @@ public class EmpresaView extends Div {
 
     //Componentes UI
     private final Grid<Empresa> gridempresa = new Grid<>(Empresa.class, false);
+    private final IntegerField direccion = new IntegerField("Direccion");
     private final TextField folderTemps = new TextField("Informes de carpeta");
     private final TextField folderReports = new TextField("Informes de carpeta");
     private final Checkbox allowBuyWithoutStock = new Checkbox("Permitir comprar sin stock");
@@ -69,18 +70,7 @@ public class EmpresaView extends Div {
     private void setupGrid() {
         gridempresa.addClassName("empresa-grid");
         gridempresa.setSizeFull();
-        
-        // Definir columnas manualmente con los nombres correctos de las propiedades
-        gridempresa.addColumn(Empresa::getFolderTemps).setHeader("Carpeta Temps");
-        gridempresa.addColumn(Empresa::getFolderReports).setHeader("Carpeta Reportes");
-        gridempresa.addColumn(Empresa::getAllowBuyWithoutStock).setHeader("Permitir Compra Sin Stock");
-        gridempresa.addColumn(Empresa::getRequireSalesPin).setHeader("Requerir PIN Ventas");
-        gridempresa.addColumn(Empresa::getDocumentoTipoXdefecto).setHeader("Tipo Documento X Defecto");
-        gridempresa.addColumn(Empresa::getLogoEnterprise).setHeader("Logo Empresa");
-        gridempresa.addColumn(Empresa::getLogoWidth).setHeader("Ancho Logo");
-        gridempresa.addColumn(Empresa::getCommercialName).setHeader("Nombre Comercial");
-        
-        gridempresa.getColumns().forEach(col -> col.setAutoWidth(true));
+        gridempresa.setColumns("direccion", "folderTemps", "folderReports", "allowBuyWithoutStock", "requireSalesPin", "documentoTipoXdefecto", "logoEnterprise", "logoWidth", "commercialName");
         gridempresa.asSingleSelect().addValueChangeListener(evt -> editEmpresa(evt.getValue()));
     }
 
@@ -91,7 +81,7 @@ public class EmpresaView extends Div {
         Div div = new Div();
         div.setClassName("editor");
         editorDiv.add(div);
-        formLayout.add(folderTemps, folderReports, allowBuyWithoutStock, requireSalesPin, documentoTipoXdefecto, logoEnterprise, logoWidth, commercialName);
+        formLayout.add(direccion, folderTemps, folderReports, allowBuyWithoutStock, requireSalesPin, documentoTipoXdefecto, logoEnterprise, logoWidth, commercialName);
         save.addClickListener(event -> save());
         cancel.addClickListener(event -> clearForm());
         delete.addClickListener(event -> delete());
