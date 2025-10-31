@@ -4,6 +4,8 @@ import com.elolympus.data.Almacen.OrdenRegularizacion;
 import com.elolympus.data.Almacen.OrdenRegularizacionDet;
 import com.elolympus.services.services.OrdenRegDetService;
 import com.elolympus.services.services.OrdenRegService;
+import com.elolympus.services.services.ProductoService;
+import com.elolympus.data.Logistica.Producto;
 import com.elolympus.views.MainLayout;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -20,6 +22,7 @@ import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.textfield.BigDecimalField;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.PageTitle;
@@ -35,6 +38,7 @@ public class OrdenRegularizacionView extends Div {
 
     private final OrdenRegService ordenRegService;
     private final OrdenRegDetService ordenRegDetService;
+    private final ProductoService productoService;
     private OrdenRegularizacion ordenRegularizacion;
     private OrdenRegularizacionDet ordenRegularizacionDet;
     private final BeanValidationBinder<OrdenRegularizacion> binder= new BeanValidationBinder<>(OrdenRegularizacion.class);
@@ -48,7 +52,7 @@ public class OrdenRegularizacionView extends Div {
     private final TextField observaciones = new TextField("Observaciones");
 
     //Componentes UI Detalles de Orden de Regularización
-    private final IntegerField producto = new IntegerField("Producto");
+    private final ComboBox<Producto> producto = new ComboBox<>("Producto");
     private final BigDecimalField cantidad = new BigDecimalField("Cantidad");
     private final BigDecimalField cantidadFraccion = new BigDecimalField("Cantidad Fracción");
     private final DatePicker fechaVencimiento = new DatePicker("Fecha Vencimiento");
@@ -61,9 +65,10 @@ public class OrdenRegularizacionView extends Div {
     //private final FormLayout formLayout = new FormLayout();
     private final FormLayout headerFormLayout = new FormLayout();
     private final FormLayout detailFormLayout = new FormLayout();
-    public OrdenRegularizacionView(OrdenRegService ordenRegService, OrdenRegDetService ordenRegDetService) {
+    public OrdenRegularizacionView(OrdenRegService ordenRegService, OrdenRegDetService ordenRegDetService, ProductoService productoService) {
         this.ordenRegService = ordenRegService;
         this.ordenRegDetService = ordenRegDetService;
+        this.productoService = productoService;
         init();
     }
     private void init() {
@@ -88,6 +93,9 @@ public class OrdenRegularizacionView extends Div {
         gridOrdenRegularizacion.setItemDetailsRenderer(new ComponentRenderer<>(ordenRegularizacion -> {
             detailGrid.setItems(ordenRegDetService.findByOrdenRegularizacion(ordenRegularizacion)); // Suponiendo que este método devuelve los detalles relacionados.
             detailGrid.setColumns("producto", "cantidad", "cantidadFraccion", "fechaVencimiento");
+            detailGrid.addColumn(ordenRegularizacionDet -> ordenRegularizacionDet.getProducto() != null ? ordenRegularizacionDet.getProducto().getNombre() : "")
+                    .setHeader("Producto")
+                    .setAutoWidth(true);
             detailGrid.asSingleSelect().addValueChangeListener(event -> editOrdenRegularizacionDet(event.getValue()));
 
             return detailGrid;
@@ -166,12 +174,11 @@ public class OrdenRegularizacionView extends Div {
                 )
                 .bind(OrdenRegularizacion::getFecha, OrdenRegularizacion::setFecha);
         //binder de detalles
+        // Load productos for the combo box
+        producto.setItems(productoService.findActive());
+        producto.setItemLabelGenerator(Producto::getNombre);
+        
         binderDet.forField(producto)
-                .withConverter(
-                        integer -> integer == null ? null : integer,
-                        integer -> integer == null ? null : integer,
-                        "Producto inválido"
-                )
                 .bind(OrdenRegularizacionDet::getProducto, OrdenRegularizacionDet::setProducto);
         binderDet.forField(cantidad)
                 .withConverter(

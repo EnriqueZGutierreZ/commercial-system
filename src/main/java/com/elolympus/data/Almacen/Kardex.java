@@ -1,8 +1,11 @@
 package com.elolympus.data.Almacen;
 
 import com.elolympus.data.AbstractEntity;
+import com.elolympus.data.Logistica.Producto;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 import java.math.BigDecimal;
@@ -53,8 +56,9 @@ public class Kardex extends AbstractEntity {
     @Column(name = "stock")
     private BigDecimal stock;
 
-    @Column(name = "producto")
-    private Integer producto;
+    @ManyToOne
+    @JoinColumn(name = "producto_id", nullable = false)
+    private Producto producto;
 
     @Column(name = "fecha_vencimiento")
     private Date fechaVencimiento;
@@ -64,7 +68,7 @@ public class Kardex extends AbstractEntity {
     }
 
     //Constructor con parametros
-    public Kardex(Integer ordenId, Timestamp fecha, Date fechaOrden, String movimiento, Integer almacen, String origen, String destino, BigDecimal precioCosto, BigDecimal precioVenta, BigDecimal stockAnterior, BigDecimal ingreso, BigDecimal salida, BigDecimal stock, Integer producto, Date fechaVencimiento) {
+    public Kardex(Integer ordenId, Timestamp fecha, Date fechaOrden, String movimiento, Integer almacen, String origen, String destino, BigDecimal precioCosto, BigDecimal precioVenta, BigDecimal stockAnterior, BigDecimal ingreso, BigDecimal salida, BigDecimal stock, Producto producto, Date fechaVencimiento) {
         this.ordenId = ordenId;
         this.fecha = fecha;
         this.fechaOrden = fechaOrden;
@@ -188,11 +192,11 @@ public class Kardex extends AbstractEntity {
         this.stock = stock;
     }
 
-    public Integer getProducto() {
+    public Producto getProducto() {
         return producto;
     }
 
-    public void setProducto(Integer producto) {
+    public void setProducto(Producto producto) {
         this.producto = producto;
     }
 
@@ -221,7 +225,7 @@ public class Kardex extends AbstractEntity {
                 ", ingreso=" + ingreso +
                 ", salida=" + salida +
                 ", stock=" + stock +
-                ", producto=" + producto +
+                ", producto=" + (producto != null ? producto.getNombre() : "null") +
                 ", fechaVencimiento=" + fechaVencimiento +
                 '}';
     }

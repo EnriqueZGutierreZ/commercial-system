@@ -4,6 +4,8 @@ import com.elolympus.data.Logistica.OrdenCompra;
 import com.elolympus.data.Logistica.OrdenCompraDet;
 import com.elolympus.services.services.OrdenCompraDetService;
 import com.elolympus.services.services.OrdenCompraService;
+import com.elolympus.services.services.ProductoService;
+import com.elolympus.data.Logistica.Producto;
 import com.elolympus.views.MainLayout;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -21,6 +23,7 @@ import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.textfield.BigDecimalField;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.PageTitle;
@@ -35,6 +38,7 @@ public class OrdenCompraDetView extends Div {
 
     //private final OrdenCompraService ordenCompraService;
     private final OrdenCompraDetService ordenCompraDetService;
+    private final ProductoService productoService;
     private OrdenCompra ordenCompra;
     private OrdenCompraDet ordenCompraDet;
     private final BeanValidationBinder<OrdenCompra> binder= new BeanValidationBinder<>(OrdenCompra.class);
@@ -58,7 +62,7 @@ public class OrdenCompraDetView extends Div {
     private final Checkbox impuesto_incluido = new Checkbox("Impuesto Incluido");
     private final TextField documento_pago = new TextField("Documento Pago");
     //componentes UI OrdenCompraDet
-    private final IntegerField producto = new IntegerField("Producto");
+    private final ComboBox<Producto> producto = new ComboBox<>("Producto");
     private final BigDecimalField cantidad = new BigDecimalField("Cantidad");
     private final BigDecimalField precioUnitario = new BigDecimalField("Precio Unitario");
     private final BigDecimalField totaldet = new BigDecimalField("Total");
@@ -79,8 +83,9 @@ public class OrdenCompraDetView extends Div {
     private final FormLayout detailForm = new FormLayout();
 
     //constructor
-    public OrdenCompraDetView(OrdenCompraDetService ordenCompraDetService) {
+    public OrdenCompraDetView(OrdenCompraDetService ordenCompraDetService, ProductoService productoService) {
         this.ordenCompraDetService = ordenCompraDetService;
+        this.productoService = productoService;
         init();
     }
     private void init(){
@@ -104,7 +109,10 @@ public class OrdenCompraDetView extends Div {
         grid.asSingleSelect().addValueChangeListener(evt -> editOrdenCompra(evt.getValue()));
         grid.setItemDetailsRenderer(new ComponentRenderer<>(ordenCompra->{
             gridDet.setItems(ordenCompraDetService.findByordenCompra(ordenCompra));
-            gridDet.setColumns("producto", "cantidad", "precioUnitario", "totaldet", "descuento", "almacen", "cantidadTg", "lote", "fechaVencimiento", "cantidadUsada", "cantidadFraccion");
+            gridDet.setColumns("cantidad", "precioUnitario", "totaldet", "descuento", "almacen", "cantidadTg", "lote", "fechaVencimiento", "cantidadUsada", "cantidadFraccion");
+            gridDet.addColumn(ordenCompraDet -> ordenCompraDet.getProducto() != null ? ordenCompraDet.getProducto().getNombre() : "")
+                    .setHeader("Producto")
+                    .setAutoWidth(true);
             gridDet.asSingleSelect().addValueChangeListener(event -> editOrdenCompraDet(event.getValue()));
 
             return gridDet;
@@ -163,6 +171,10 @@ public class OrdenCompraDetView extends Div {
     }
 
     private void configureForm(){
+        // Load productos for the combo box
+        producto.setItems(productoService.findActive());
+        producto.setItemLabelGenerator(Producto::getNombre);
+        
         binderDet.forField(producto).bind(OrdenCompraDet::getProducto, OrdenCompraDet::setProducto);
         binderDet.forField(cantidad).bind(OrdenCompraDet::getCantidad, OrdenCompraDet::setCantidad);
         binderDet.forField(precioUnitario).bind(OrdenCompraDet::getPrecioUnitario, OrdenCompraDet::setPrecioUnitario);

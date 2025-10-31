@@ -109,6 +109,15 @@ public class MainLayout extends AppLayout {
             ventas.addItem(new SideNavItem("Orden Regularizacion", OrdenRegularizacionView.class, VaadinIcon.CALC_BOOK.create()));
             ventas.addItem(new SideNavItem("Orden de Compra", ListOrdenCompraView.class, VaadinIcon.CALC_BOOK.create()));
             ventas.addItem(new SideNavItem("Productos", ProductosView.class, VaadinIcon.CART_O.create()));
+            
+            // Submenú para gestión de catálogos
+            SideNavItem catalogos = new SideNavItem("Catálogos");
+            catalogos.setPrefixComponent(VaadinIcon.LIST.create());
+            catalogos.addItem(new SideNavItem("Marcas", MarcasView.class, VaadinIcon.TAG.create()));
+            catalogos.addItem(new SideNavItem("Líneas", LineasView.class, VaadinIcon.LINES.create()));
+            catalogos.addItem(new SideNavItem("Unidades", UnidadesView.class, VaadinIcon.SCALE.create()));
+            ventas.addItem(catalogos);
+            
             nav.addItem(ventas);
         }
         //ADMINISTRACION

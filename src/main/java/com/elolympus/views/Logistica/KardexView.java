@@ -2,12 +2,15 @@ package com.elolympus.views.Logistica;
 
 
 import com.elolympus.data.Almacen.Kardex;
+import com.elolympus.data.Logistica.Producto;
 import com.elolympus.services.services.KardexService;
+import com.elolympus.services.services.ProductoService;
 import com.elolympus.views.MainLayout;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -36,6 +39,7 @@ public class KardexView extends Div {
 
 
     private final KardexService kardexService;
+    private final ProductoService productoService;
     private Kardex kardex;
     private BeanValidationBinder<Kardex> binder;
 
@@ -54,7 +58,7 @@ public class KardexView extends Div {
     private final BigDecimalField ingreso = new BigDecimalField("Ingreso");
     private final BigDecimalField salida = new BigDecimalField("Salida");
     private final BigDecimalField stock = new BigDecimalField("Stock");
-    private final IntegerField producto = new IntegerField("Producto");
+    private final ComboBox<Producto> producto = new ComboBox<>("Producto");
     private final DatePicker fechaVencimiento = new DatePicker("Fecha Vencimiento");
     private final Button save = new Button("Guardar");
     private final Button cancel = new Button("Cancelar");
@@ -65,8 +69,9 @@ public class KardexView extends Div {
 
 
     @Autowired
-    public KardexView(KardexService kardexService) {
+    public KardexView(KardexService kardexService, ProductoService productoService) {
         this.kardexService = kardexService;
+        this.productoService = productoService;
         try {
             // Configure Form
             binder = new BeanValidationBinder<>(Kardex.class);
@@ -91,7 +96,14 @@ public class KardexView extends Div {
         gridkardex= new Grid<>(Kardex.class, false);
         gridkardex.setClassName("grilla");
         gridkardex.setHeight("86%");
-        gridkardex.setColumns("ordenId", "fecha","fechaOrden", "movimiento", "almacen", "origen", "destino", "precioCosto", "precioVenta", "stockAnterior", "ingreso", "salida", "stock", "producto", "fechaVencimiento");
+        gridkardex.setColumns("ordenId", "fecha","fechaOrden", "movimiento", "almacen", "origen", "destino", "precioCosto", "precioVenta", "stockAnterior", "ingreso", "salida", "stock", "fechaVencimiento");
+        
+        // Add producto column with custom renderer
+        gridkardex.addColumn(kardex -> kardex.getProducto() != null ? kardex.getProducto().getNombre() : "")
+                .setHeader("Producto")
+                .setKey("producto")
+                .setAutoWidth(true);
+        
         gridkardex.getColumns().forEach(col -> col.setAutoWidth(true));
         gridkardex.asSingleSelect().addValueChangeListener(event -> editKardex(event.getValue()));
     }
@@ -136,6 +148,11 @@ public class KardexView extends Div {
     }
 
     private void setupForm() {
+        // Configure producto ComboBox
+        producto.setItems(productoService.findAll());
+        producto.setItemLabelGenerator(Producto::getNombre);
+        producto.setPlaceholder("Seleccione un producto");
+        
         binder.forField(fecha)
                 .withConverter(
                         localDateTime -> localDateTime == null ? null : Timestamp.valueOf(localDateTime),

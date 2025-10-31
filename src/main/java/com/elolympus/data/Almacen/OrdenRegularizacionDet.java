@@ -1,6 +1,7 @@
 package com.elolympus.data.Almacen;
 
 import com.elolympus.data.AbstractEntity;
+import com.elolympus.data.Logistica.Producto;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -13,8 +14,9 @@ public class OrdenRegularizacionDet extends AbstractEntity {
     @JoinColumn(name = "orden_regularizacion", referencedColumnName = "id")
     private OrdenRegularizacion ordenRegularizacion;
 
-    @Column(name = "producto")
-    private Integer producto;
+    @ManyToOne
+    @JoinColumn(name = "producto_id", nullable = false)
+    private Producto producto;
 
     @Column(name = "cantidad")
     private BigDecimal cantidad;
@@ -30,7 +32,7 @@ public class OrdenRegularizacionDet extends AbstractEntity {
     }
 
     //Constructor con parametros
-    public OrdenRegularizacionDet(OrdenRegularizacion ordenRegularizacion, Integer producto, BigDecimal cantidad, BigDecimal cantidadFraccion, Date fechaVencimiento) {
+    public OrdenRegularizacionDet(OrdenRegularizacion ordenRegularizacion, Producto producto, BigDecimal cantidad, BigDecimal cantidadFraccion, Date fechaVencimiento) {
         this.ordenRegularizacion = ordenRegularizacion;
         this.producto = producto;
         this.cantidad = cantidad;
@@ -48,11 +50,11 @@ public class OrdenRegularizacionDet extends AbstractEntity {
         this.ordenRegularizacion = ordenRegularizacion;
     }
 
-    public Integer getProducto() {
+    public Producto getProducto() {
         return producto;
     }
 
-    public void setProducto(Integer producto) {
+    public void setProducto(Producto producto) {
         this.producto = producto;
     }
 
@@ -85,7 +87,7 @@ public class OrdenRegularizacionDet extends AbstractEntity {
     public String toString() {
         return "OrdenRegularizacionDet{" +
                 "ordenRegularizacion=" + ordenRegularizacion +
-                ", producto=" + producto +
+                ", producto=" + (producto != null ? producto.getNombre() : "null") +
                 ", cantidad=" + cantidad +
                 ", cantidadFraccion=" + cantidadFraccion +
                 ", fechaVencimiento=" + fechaVencimiento +

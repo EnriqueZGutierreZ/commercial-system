@@ -21,8 +21,9 @@ public class OrdenCompraDet extends AbstractEntity {
     @JoinColumn(name = "orden_compra", referencedColumnName = "id")
     private OrdenCompra ordenCompra;
 
-    @Column(name = "producto")
-    private Integer producto;
+    @ManyToOne
+    @JoinColumn(name = "producto_id", nullable = false)
+    private Producto producto;
 
     @Column(name = "cantidad")
     private BigDecimal cantidad;

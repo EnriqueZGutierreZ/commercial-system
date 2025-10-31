@@ -117,7 +117,9 @@ public class OrdenCompraView extends Div {
     private void initDataGrid(){
         dataGrid.addColumn(OrdenCompraDet::getOrdenCompra,"Orden Compra");
         dataGrid.addColumn(OrdenCompraDet::getAlmacen,"Almacen");
-        dataGrid.addColumn(OrdenCompraDet::getProducto,"Producto");
+        dataGrid.addColumn(ordenCompraDet -> ordenCompraDet.getProducto() != null ? ordenCompraDet.getProducto().getNombre() : "")
+                .setHeader("Producto")
+                .setAutoWidth(true);
         dataGrid.addColumn(OrdenCompraDet::getCantidad,"Cantidad");
         dataGrid.addColumn(OrdenCompraDet::getCantidadTg,"Cantidad TG");
         dataGrid.addColumn(OrdenCompraDet::getDescuento,"Descuento");
