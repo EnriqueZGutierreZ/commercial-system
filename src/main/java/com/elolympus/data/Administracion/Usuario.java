@@ -34,13 +34,11 @@ public class Usuario extends AbstractEntity {
     private Rol rol;
     
     // Métodos necesarios para las vistas
-    @Override
     public Long getId() {
-        return super.getId();
+        return this.id;
     }
     
-    @Override
     public boolean isActivo() {
-        return super.isActivo();
+        return this.activo;
     }
 }

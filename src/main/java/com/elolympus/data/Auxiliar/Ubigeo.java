@@ -43,5 +43,4 @@ public class Ubigeo{
     private String distrito;
     @Column(name = "descripcion", nullable = true)
     private String descripcion;
-    
 }

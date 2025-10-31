@@ -52,19 +52,16 @@ public class Persona extends AbstractEntity {
     }
     
     // Método getId() necesario para las vistas
-    @Override
     public Long getId() {
-        return super.getId();
+        return this.id;
     }
     
-    @Override
     public boolean isActivo() {
-        return super.isActivo();
+        return this.activo;
     }
     
-    @Override
     public void setActivo(boolean activo) {
-        super.setActivo(activo);
+        this.activo = activo;
     }
 
 }

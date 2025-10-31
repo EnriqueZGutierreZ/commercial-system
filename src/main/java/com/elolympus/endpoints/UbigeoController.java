@@ -24,8 +24,8 @@ public class UbigeoController {
     }
 
     @GetMapping("/provincias/{regionId}")
-    public List<Provincia> getProvinciasByRegion(@PathVariable String departamentoId) {
-        return ubigeoService.getProvinciasByRegion(departamentoId);
+    public List<Provincia> getProvinciasByRegion(@PathVariable String regionId) {
+        return ubigeoService.getProvinciasByRegion(regionId);
     }
 
     @GetMapping("/distritos/{provinciaId}")

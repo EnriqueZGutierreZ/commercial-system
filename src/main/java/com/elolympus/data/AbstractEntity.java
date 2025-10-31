@@ -22,16 +22,16 @@ public abstract class AbstractEntity {
     @SequenceGenerator(
             name = "idgenerator",
             initialValue = 100)
-    private Long id;
+    protected Long id;
 
     @Column(name = "creado", nullable = false)
-    private LocalDateTime creado;
+    protected LocalDateTime creado;
     @Column(name = "creador", length = 200, nullable = false)
-    private String creador;
+    protected String creador;
     @Column(name = "activo", nullable = false)
-    private boolean activo;
+    protected boolean activo;
     @Version
-    private Long version;
+    protected Long version;
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @PrePersist
