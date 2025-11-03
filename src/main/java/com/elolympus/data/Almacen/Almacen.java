@@ -10,13 +10,12 @@ import java.time.LocalDateTime;
 
 
 //Constructor Vacio - get - set - equals - toString
-@EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "almacen", schema = "almacen")
-public class Almacen extends AbstractEntity {
+public class Almacen{
 
     //++++++++++++++++++++++++++++ICCA+++++++++++++++++++++++++++++
     @Id
