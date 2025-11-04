@@ -40,12 +40,12 @@ import java.util.Optional;
 public class LineasView extends Div implements BeforeEnterObserver {
 
     private final LineaService lineaService;
-    private BeanValidationBinder<Linea> binder;
-    private Linea linea;
 
     public final String LINEA_ID = "LineaID";
     public final String LINEA_EDIT_ROUTE_TEMPLATE = "lineas/%s/edit";
     public Grid<Linea> gridLineas = new Grid<>(Linea.class, false);
+    private BeanValidationBinder<Linea> binder;
+    private Linea linea;
     public final TextField txtNombre = new TextField("Nombre", "", "Buscar por nombre");
     public final TextField txtCodigo = new TextField("Código", "", "Buscar por código");
     public final Button btnFiltrar = new Button("BUSCAR", new Icon(VaadinIcon.FILTER));
@@ -69,13 +69,12 @@ public class LineasView extends Div implements BeforeEnterObserver {
     @Autowired
     public LineasView(LineaService lineaService) {
         this.lineaService = lineaService;
-        
+
         try {
             binder = new BeanValidationBinder<>(Linea.class);
             binder.forField(nombre).bind(Linea::getNombre, Linea::setNombre);
             binder.forField(descripcion).bind(Linea::getDescripcion, Linea::setDescripcion);
             binder.forField(codigo).bind(Linea::getCodigo, Linea::setCodigo);
-            // creador es solo lectura - solo se muestra, no se guarda
             binder.forField(creador).bind(Linea::getCreador, null);
         } catch (Exception e) {
             System.out.println("ERROR: " + e.getMessage());
@@ -122,18 +121,6 @@ public class LineasView extends Div implements BeforeEnterObserver {
         toggleButton.addClassName("toggle-button");
         tophl.addClassName("tophl");
         tophl.setAlignItems(FlexComponent.Alignment.BASELINE);
-    }
-
-    private final SerializableBiConsumer<Span, Linea> EstadoComponenteActivo = (
-            span, linea) -> {
-        String theme = String.format("badge %s",
-                linea.isActivo() ? "success" : "error");
-        span.getElement().setAttribute("theme", theme);
-        span.setText(linea.isActivo() ? "Activo" : "Desactivado");
-    };
-
-    private ComponentRenderer<Span, Linea> CrearComponmenteActivoRenderer() {
-        return new ComponentRenderer<>(Span::new, EstadoComponenteActivo);
     }
 
     private void createEditorLayout(SplitLayout splitLayout) {
@@ -186,6 +173,33 @@ public class LineasView extends Div implements BeforeEnterObserver {
         wrapper.getStyle().set("flex-direction", "column");
         splitLayout.addToPrimary(wrapper);
         wrapper.add(toggleButton, tophl, createGrid());
+    }
+
+    private final SerializableBiConsumer<Span, Linea> EstadoComponenteActivo = (
+            span, linea) -> {
+        boolean isActivo = linea.isActivo();
+        String theme = isActivo ? "badge success" : "badge error";
+        span.getElement().setAttribute("theme", theme);
+        span.setText(isActivo ? "Activo" : "Desactivado");
+        
+        // Asegurar que los estilos se apliquen correctamente
+        span.getElement().getStyle().set("padding", "0.25em 0.5em");
+        span.getElement().getStyle().set("border-radius", "4px");
+        span.getElement().getStyle().set("font-size", "0.875em");
+        span.getElement().getStyle().set("font-weight", "500");
+        span.getElement().getStyle().set("text-transform", "uppercase");
+        
+        if (isActivo) {
+            span.getElement().getStyle().set("background-color", "var(--lumo-success-color-10pct)");
+            span.getElement().getStyle().set("color", "var(--lumo-success-text-color)");
+        } else {
+            span.getElement().getStyle().set("background-color", "var(--lumo-error-color-10pct)");
+            span.getElement().getStyle().set("color", "var(--lumo-error-text-color)");
+        }
+    };
+
+    private ComponentRenderer<Span, Linea> CrearComponmenteActivoRenderer() {
+        return new ComponentRenderer<>(Span::new, EstadoComponenteActivo);
     }
 
     public void onBtnFiltrar() {
@@ -301,6 +315,9 @@ public class LineasView extends Div implements BeforeEnterObserver {
                 refreshGrid();
                 event.forwardTo(LineasView.class);
             }
+        } else {
+            refreshGrid();
         }
     }
+
 }

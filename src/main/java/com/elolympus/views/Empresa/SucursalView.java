@@ -1,14 +1,15 @@
-package com.elolympus.views.Logistica;
+package com.elolympus.views.Empresa;
 
-import com.elolympus.data.Almacen.Almacen;
+import com.elolympus.data.Empresa.Empresa;
 import com.elolympus.data.Empresa.Sucursal;
-import com.elolympus.services.services.AlmacenService;
+import com.elolympus.services.services.EmpresaService;
 import com.elolympus.services.services.SucursalService;
 import com.elolympus.views.MainLayout;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
@@ -25,21 +26,23 @@ import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.PermitAll;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
-@PageTitle("Almacen")
-@Route(value = "almacen/:AlmacenID?/:action?(edit)", layout = MainLayout.class)
+@PageTitle("Sucursal")
+@Route(value = "sucursal/:SucursalID?/:action?(edit)", layout = MainLayout.class)
 @PermitAll
-public class AlmacenView extends Div {
+public class SucursalView extends Div {
 
-    private final AlmacenService almacenService;
     private final SucursalService sucursalService;
-    private Almacen almacen;
-    private BeanValidationBinder<Almacen> binder;
+    private final EmpresaService empresaService;
+    private Sucursal sucursal;
+    private BeanValidationBinder<Sucursal> binder;
 
     //Componentes UI
-    private final Grid<Almacen> gridalmacen = new Grid<>(Almacen.class, false);
-    private final IntegerField Codigo = new IntegerField("Código");
-    private final TextField Descripcion = new TextField("Descripción");
-    private final ComboBox<Sucursal> sucursalComboBox = new ComboBox<>("Sucursal");
+    private final Grid<Sucursal> gridsucursal = new Grid<>(Sucursal.class, false);
+    private final Checkbox principal = new Checkbox("Principal");
+    private final IntegerField codigo = new IntegerField("Código");
+    private final TextField descripcion = new TextField("Descripción");
+    private final ComboBox<Empresa> empresaComboBox = new ComboBox<>("Empresa");
+    private final IntegerField serie = new IntegerField("Serie");
 
     private final Button save = new Button("Guardar");
     private final Button cancel = new Button("Cancelar");
@@ -47,16 +50,16 @@ public class AlmacenView extends Div {
 
     private final FormLayout formLayout = new FormLayout();
 
-    public AlmacenView(AlmacenService almacenService, SucursalService sucursalService) {
-        this.almacenService = almacenService;
+    public SucursalView(SucursalService sucursalService, EmpresaService empresaService) {
         this.sucursalService = sucursalService;
+        this.empresaService = empresaService;
         try{
-            binder = new BeanValidationBinder<>(Almacen.class);
+            binder = new BeanValidationBinder<>(Sucursal.class);
             binder.bindInstanceFields(this);
         }catch (Exception e){
             System.out.println("ERRORRR: " +e.getMessage());
         }
-        addClassName("almacen-view");
+        addClassName("sucursal-view");
         setSizeFull();
         setupGrid();
         SplitLayout layout = new SplitLayout(createGridLayout(), createEditorLayout());
@@ -66,11 +69,11 @@ public class AlmacenView extends Div {
     }
 
     private void setupGrid() {
-        gridalmacen.addClassName("almacen-grid");
-        gridalmacen.setSizeFull();
-        gridalmacen.setColumns("codigo", "descripcion");
-        gridalmacen.addColumn(almacen -> almacen.getSucursal() != null ? almacen.getSucursal().getDescripcion() : "").setHeader("Sucursal");
-        gridalmacen.asSingleSelect().addValueChangeListener(evt -> editAlmacen(evt.getValue()));
+        gridsucursal.addClassName("sucursal-grid");
+        gridsucursal.setSizeFull();
+        gridsucursal.setColumns("principal", "codigo", "descripcion", "serie");
+        gridsucursal.addColumn(sucursal -> sucursal.getEmpresa() != null ? sucursal.getEmpresa().getCommercialName() : "").setHeader("Empresa");
+        gridsucursal.asSingleSelect().addValueChangeListener(evt -> editSucursal(evt.getValue()));
     }
 
     private Component createEditorLayout(){
@@ -80,9 +83,9 @@ public class AlmacenView extends Div {
         Div div = new Div();
         div.setClassName("editor");
         editorDiv.add(div);
-        sucursalComboBox.setItems(sucursalService.findAll());
-        sucursalComboBox.setItemLabelGenerator(Sucursal::getDescripcion);
-        formLayout.add(Codigo, Descripcion, sucursalComboBox);
+        empresaComboBox.setItems(empresaService.findAll());
+        empresaComboBox.setItemLabelGenerator(Empresa::getCommercialName);
+        formLayout.add(principal, codigo, descripcion, empresaComboBox, serie);
         save.addClickListener(event -> save());
         cancel.addClickListener(event -> clearForm());
         delete.addClickListener(event -> delete());
@@ -107,32 +110,32 @@ public class AlmacenView extends Div {
         busquedaDiv.addClassName("tophl");
         Div gridContainer = new Div();
         gridContainer.addClassName("grid-wrapper");
-        gridContainer.add(busquedaDiv,gridalmacen);
+        gridContainer.add(busquedaDiv,gridsucursal);
         gridContainer.setSizeFull();
         return gridContainer;
     }
 
     private void refreshGrid() {
-        gridalmacen.setItems(almacenService.findAll());
+        gridsucursal.setItems(sucursalService.findAll());
     }
 
     private void save(){
         try{
-            if(almacen==null){
-                almacen = new Almacen();
+            if(sucursal==null){
+                sucursal = new Sucursal();
             }
-            almacen.setSucursal(sucursalComboBox.getValue());
-            if(binder.writeBeanIfValid(almacen)){
-                almacenService.update(almacen);
+            sucursal.setEmpresa(empresaComboBox.getValue());
+            if(binder.writeBeanIfValid(sucursal)){
+                sucursalService.update(sucursal);
                 clearForm();
                 refreshGrid();
-                Notification.show("Almacén guardado correctamente");
+                Notification.show("Sucursal guardada correctamente");
             }else {
-                Notification.show("Error al guardar el almacén");
+                Notification.show("Error al guardar la sucursal");
             }
             clearForm();
             refreshGrid();
-            UI.getCurrent().navigate(AlmacenView.class);
+            UI.getCurrent().navigate(SucursalView.class);
         }catch (ObjectOptimisticLockingFailureException exception) {
             Notification n = Notification.show(
                     "Error al actualizar los datos. Alguien más actualizó el registro mientras usted hacía cambios.");
@@ -142,30 +145,30 @@ public class AlmacenView extends Div {
     }
 
     private void delete(){
-        if(almacen!=null){
-            almacenService.delete(almacen);
+        if(sucursal!=null){
+            sucursalService.delete(sucursal);
             clearForm();
             refreshGrid();
-            Notification.show("Almacén eliminado correctamente");
+            Notification.show("Sucursal eliminada correctamente");
         }else{
-            Notification.show("Seleccione un almacén para eliminar");
+            Notification.show("Seleccione una sucursal para eliminar");
         }
     }
 
     private void clearForm(){
-        almacen= new Almacen();
-        binder.readBean(almacen);
-        sucursalComboBox.clear();
+        sucursal= new Sucursal();
+        binder.readBean(sucursal);
+        empresaComboBox.clear();
         save.setText("Guardar");
     }
 
-    private void editAlmacen(Almacen almacen){
-        if(almacen==null){
+    private void editSucursal(Sucursal sucursal){
+        if(sucursal==null){
             clearForm();
         }else{
-            this.almacen=almacen;
-            binder.readBean(almacen);
-            sucursalComboBox.setValue(almacen.getSucursal());
+            this.sucursal=sucursal;
+            binder.readBean(sucursal);
+            empresaComboBox.setValue(sucursal.getEmpresa());
             save.setText("Actualizar");
         }
     }

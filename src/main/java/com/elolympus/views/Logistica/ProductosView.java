@@ -52,12 +52,12 @@ public class ProductosView extends Div implements BeforeEnterObserver {
     private final MarcaService marcaService;
     private final LineaService lineaService;
     private final UnidadService unidadService;
-    private BeanValidationBinder<Producto> binder;
-    private Producto producto;
 
     public final String PRODUCTO_ID = "ProductoID";
     public final String PRODUCTO_EDIT_ROUTE_TEMPLATE = "productos/%s/edit";
     public Grid<Producto> gridProductos = new Grid<>(Producto.class, false);
+    private BeanValidationBinder<Producto> binder;
+    private Producto producto;
     public final TextField txtCodigo = new TextField("Código", "", "Buscar por código");
     public final TextField txtNombre = new TextField("Nombre", "", "Buscar por nombre");
     public final ComboBox<Marca> cmbMarca = new ComboBox<>("Marca");
@@ -90,17 +90,25 @@ public class ProductosView extends Div implements BeforeEnterObserver {
     public final SplitLayout splitLayout = new SplitLayout();
 
     @Autowired
-    public ProductosView(ProductoService productoService, MarcaService marcaService, 
-                        LineaService lineaService, UnidadService unidadService) {
+    public ProductosView(ProductoService productoService, MarcaService marcaService,
+                         LineaService lineaService, UnidadService unidadService) {
         this.productoService = productoService;
         this.marcaService = marcaService;
         this.lineaService = lineaService;
         this.unidadService = unidadService;
+
+        addClassNames("productos-view");
+        setSizeFull();
+        this.createGridLayout(splitLayout);
+        this.createEditorLayout(splitLayout);
+        add(splitLayout);
+        initStyles();
+        
+        // Load combo box data for form fields BEFORE creating binder
+        loadComboBoxData();
         
         try {
-            // Configure Form - solo bindear campos específicos manualmente
             binder = new BeanValidationBinder<>(Producto.class);
-            // Bind campos específicos en lugar de automático
             binder.forField(codigo).bind(Producto::getCodigo, Producto::setCodigo);
             binder.forField(nombre).bind(Producto::getNombre, Producto::setNombre);
             binder.forField(descripcion).bind(Producto::getDescripcion, Producto::setDescripcion);
@@ -113,32 +121,20 @@ public class ProductosView extends Div implements BeforeEnterObserver {
             binder.forField(stockMaximo).bind(Producto::getStockMaximo, Producto::setStockMaximo);
             binder.forField(peso).bind(Producto::getPeso, Producto::setPeso);
             binder.forField(volumen).bind(Producto::getVolumen, Producto::setVolumen);
-            // creador es solo lectura - solo se muestra, no se guarda
             binder.forField(creador).bind(Producto::getCreador, null);
         } catch (Exception e) {
             System.out.println("ERROR: " + e.getMessage());
         }
 
-        // Load combo box data
-        loadComboBoxData();
-
-        addClassNames("productos-view");
-        setSizeFull(); // Asegurar que la vista ocupe todo el espacio
-        // Create UI
-        this.createGridLayout(splitLayout);
-        this.createEditorLayout(splitLayout);
-        add(splitLayout);
-        initStyles();
-        
-        // LLAMAR refreshGrid() DESPUÉS DE CREAR TODOS LOS COMPONENTES
-        refreshGrid();
-
-        // EVENTOS
         btnFiltrar.addClickListener(e -> onBtnFiltrar());
         txtCodigo.addValueChangeListener(e -> onBtnFiltrar());
         txtNombre.addValueChangeListener(e -> onBtnFiltrar());
         cmbMarca.addValueChangeListener(e -> onBtnFiltrar());
         cmbLinea.addValueChangeListener(e -> onBtnFiltrar());
+        
+        // Hacer visible el área de búsqueda por defecto
+        tophl.setVisible(true);
+        tophl.addClassName("tophl-visible");
         
         toggleButton.addClickListener(event -> {
             boolean isVisible = tophl.isVisible();
@@ -154,27 +150,7 @@ public class ProductosView extends Div implements BeforeEnterObserver {
         cancel.addClickListener(e -> onBtnCancel());
         delete.addClickListener(e -> onBtnDelete());
         gridProductos.asSingleSelect().addValueChangeListener(e -> asSingleSelect(e.getValue(), this.save));
-    }
-
-    private void loadComboBoxData() {
-        // Load marcas
-        List<Marca> marcas = marcaService.findActive();
-        cmbMarca.setItems(marcas);
-        cmbMarca.setItemLabelGenerator(Marca::getNombre);
-        marca.setItems(marcas);
-        marca.setItemLabelGenerator(Marca::getNombre);
-
-        // Load lineas
-        List<Linea> lineas = lineaService.findActive();
-        cmbLinea.setItems(lineas);
-        cmbLinea.setItemLabelGenerator(Linea::getNombre);
-        linea.setItems(lineas);
-        linea.setItemLabelGenerator(Linea::getNombre);
-
-        // Load unidades
-        List<Unidad> unidades = unidadService.findActive();
-        unidad.setItems(unidades);
-        unidad.setItemLabelGenerator(Unidad::getNombre);
+        refreshGrid();
     }
 
     public void initStyles() {
@@ -182,22 +158,10 @@ public class ProductosView extends Div implements BeforeEnterObserver {
         cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         splitLayout.setSizeFull();
-        splitLayout.setSplitterPosition(70); // 70% para el grid, 30% para el form
+        splitLayout.setSplitterPosition(70);
         toggleButton.addClassName("toggle-button");
         tophl.addClassName("tophl");
         tophl.setAlignItems(FlexComponent.Alignment.BASELINE);
-    }
-
-    private final SerializableBiConsumer<Span, Producto> EstadoComponenteActivo = (
-            span, producto) -> {
-        String theme = String.format("badge %s",
-                producto.isEsActivo() ? "success" : "error");
-        span.getElement().setAttribute("theme", theme);
-        span.setText(producto.isEsActivo() ? "Activo" : "Desactivado");
-    };
-
-    private ComponentRenderer<Span, Producto> CrearComponmenteActivoRenderer() {
-        return new ComponentRenderer<>(Span::new, EstadoComponenteActivo);
     }
 
     private void createEditorLayout(SplitLayout splitLayout) {
@@ -207,8 +171,8 @@ public class ProductosView extends Div implements BeforeEnterObserver {
         Div editorDiv = new Div();
         editorDiv.setClassName("editor");
         editorLayoutDiv.add(editorDiv);
-        formLayout.add(codigo, nombre, descripcion, marca, linea, unidad, 
-                      precioCosto, precioVenta, stockMinimo, stockMaximo, 
+        formLayout.add(codigo, nombre, descripcion, marca, linea, unidad,
+                      precioCosto, precioVenta, stockMinimo, stockMaximo,
                       peso, volumen, creador);
         editorDiv.add(formLayout);
         createButtonLayout(editorLayoutDiv);
@@ -223,7 +187,6 @@ public class ProductosView extends Div implements BeforeEnterObserver {
     }
 
     private Component createGrid() {
-        // No recrear el grid, usar la instancia existente
         gridProductos.setClassName("grilla");
         gridProductos.setHeightFull();
         gridProductos.addColumn(CrearComponmenteActivoRenderer())
@@ -267,8 +230,6 @@ public class ProductosView extends Div implements BeforeEnterObserver {
         wrapper.add(toggleButton, tophl, createGrid());
     }
 
-    // EVENTOS+++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
     public void onBtnFiltrar() {
         onRefresh();
     }
@@ -278,9 +239,9 @@ public class ProductosView extends Div implements BeforeEnterObserver {
         String nombre = txtNombre.getValue();
         Marca selectedMarca = cmbMarca.getValue();
         Linea selectedLinea = cmbLinea.getValue();
-        
+
         List<Producto> productosActivos = productoService.findActive();
-        
+
         // Apply filters
         if (!codigo.isEmpty()) {
             productosActivos.removeIf(p -> !p.getCodigo().toLowerCase().contains(codigo.toLowerCase()));
@@ -294,61 +255,9 @@ public class ProductosView extends Div implements BeforeEnterObserver {
         if (selectedLinea != null) {
             productosActivos.removeIf(p -> p.getLinea() == null || !p.getLinea().getId().equals(selectedLinea.getId()));
         }
-        
+
         gridProductos.setItems(productosActivos);
         gridProductos.getDataProvider().refreshAll();
-    }
-
-    public void onBtnSave() {
-        try {
-            if (this.producto == null) {
-                this.producto = new Producto();
-            }
-            binder.writeBean(this.producto);
-            productoService.update(this.producto);
-            clearForm();
-            refreshGrid();
-            Notification.show("Datos actualizados");
-            UI.getCurrent().navigate(ProductosView.class);
-        } catch (ObjectOptimisticLockingFailureException exception) {
-            Notification n = Notification.show(
-                    "Error al actualizar los datos. Alguien más actualizó el registro mientras usted hacía cambios.");
-            n.setPosition(Notification.Position.MIDDLE);
-            n.addThemeVariants(NotificationVariant.LUMO_ERROR);
-        } catch (ValidationException validationException) {
-            Notification.show("No se pudieron actualizar los datos. Compruebe nuevamente que todos los valores sean válidos.");
-        } catch (Exception e) {
-            Notification.show("Error: " + e.getMessage());
-        }
-    }
-
-    public void onBtnCancel() {
-        this.clearForm();
-        this.refreshGrid();
-    }
-
-    public void onBtnDelete() {
-        try {
-            if (this.producto == null) {
-                this.producto = new Producto();
-            } else {
-                this.producto.setActivo(false);
-            }
-
-            binder.writeBean(this.producto);
-            productoService.update(this.producto);
-            clearForm();
-            refreshGrid();
-            Notification.show("Producto Eliminado");
-            UI.getCurrent().navigate(ProductosView.class);
-        } catch (ObjectOptimisticLockingFailureException exception) {
-            Notification n = Notification.show(
-                    "Error al Eliminar. Alguien más actualizó el registro mientras usted hacía cambios.");
-            n.setPosition(Notification.Position.MIDDLE);
-            n.addThemeVariants(NotificationVariant.LUMO_ERROR);
-        } catch (ValidationException validationException) {
-            Notification.show("No se pudo Eliminar el producto. Compruebe nuevamente.");
-        }
     }
 
     public void asSingleSelect(Producto producto, Button btnSave) {
@@ -365,11 +274,6 @@ public class ProductosView extends Div implements BeforeEnterObserver {
     private void refreshGrid() {
         gridProductos.select(null);
         List<Producto> productosActivos = productoService.findActive();
-        
-        if (productosActivos.isEmpty()) {
-            productosActivos = productoService.findAll();
-        }
-        
         gridProductos.setItems(productosActivos);
     }
 
@@ -405,4 +309,103 @@ public class ProductosView extends Div implements BeforeEnterObserver {
             refreshGrid();
         }
     }
+
+    public void onBtnSave() {
+        try {
+            if (this.producto == null) {
+                this.producto = new Producto();
+            }
+            binder.writeBean(this.producto);
+            productoService.update(this.producto);
+            clearForm();
+            refreshGrid();
+            Notification.show("Datos actualizados");
+            UI.getCurrent().navigate(ProductosView.class);
+        } catch (ObjectOptimisticLockingFailureException exception) {
+            Notification n = Notification.show(
+                    "Error al actualizar los datos. Alguien más actualizó el registro mientras usted hacía cambios.");
+            n.setPosition(Notification.Position.MIDDLE);
+            n.addThemeVariants(NotificationVariant.LUMO_ERROR);
+        } catch (ValidationException validationException) {
+            Notification.show("No se pudieron actualizar los datos. Compruebe nuevamente que todos los valores sean válidos.");
+        }
+    }
+
+    public void onBtnCancel() {
+        this.clearForm();
+        this.refreshGrid();
+    }
+
+    public void onBtnDelete() {
+        try {
+            if (this.producto == null) {
+                this.producto = new Producto();
+            } else {
+                this.producto.setActivo(false);
+            }
+
+            binder.writeBean(this.producto);
+            productoService.update(this.producto);
+            clearForm();
+            refreshGrid();
+            Notification.show("Producto Eliminado");
+            UI.getCurrent().navigate(ProductosView.class);
+        } catch (ObjectOptimisticLockingFailureException exception) {
+            Notification n = Notification.show(
+                    "Error al Eliminar. Alguien más actualizó el registro mientras usted hacía cambios.");
+            n.setPosition(Notification.Position.MIDDLE);
+            n.addThemeVariants(NotificationVariant.LUMO_ERROR);
+        } catch (ValidationException validationException) {
+            Notification.show("No se pudo Eliminar el producto. Compruebe nuevamente.");
+        }
+    }
+
+    private final SerializableBiConsumer<Span, Producto> EstadoComponenteActivo = (
+            span, producto) -> {
+        boolean isActivo = producto.isEsActivo();
+        String theme = isActivo ? "badge success" : "badge error";
+        span.getElement().setAttribute("theme", theme);
+        span.setText(isActivo ? "Activo" : "Desactivado");
+        
+        // Asegurar que los estilos se apliquen correctamente
+        span.getElement().getStyle().set("padding", "0.25em 0.5em");
+        span.getElement().getStyle().set("border-radius", "4px");
+        span.getElement().getStyle().set("font-size", "0.875em");
+        span.getElement().getStyle().set("font-weight", "500");
+        span.getElement().getStyle().set("text-transform", "uppercase");
+        
+        if (isActivo) {
+            span.getElement().getStyle().set("background-color", "var(--lumo-success-color-10pct)");
+            span.getElement().getStyle().set("color", "var(--lumo-success-text-color)");
+        } else {
+            span.getElement().getStyle().set("background-color", "var(--lumo-error-color-10pct)");
+            span.getElement().getStyle().set("color", "var(--lumo-error-text-color)");
+        }
+    };
+
+    private ComponentRenderer<Span, Producto> CrearComponmenteActivoRenderer() {
+        return new ComponentRenderer<>(Span::new, EstadoComponenteActivo);
+    }
+
+    private void loadComboBoxData() {
+        // Load marcas for form and search
+        List<Marca> marcas = marcaService.findActive();
+        marca.setItems(marcas);
+        marca.setItemLabelGenerator(Marca::getNombre);
+        cmbMarca.setItems(marcas);
+        cmbMarca.setItemLabelGenerator(Marca::getNombre);
+
+        // Load lineas for form and search
+        List<Linea> lineas = lineaService.findActive();
+        linea.setItems(lineas);
+        linea.setItemLabelGenerator(Linea::getNombre);
+        cmbLinea.setItems(lineas);
+        cmbLinea.setItemLabelGenerator(Linea::getNombre);
+
+        // Load unidades for form
+        List<Unidad> unidades = unidadService.findActive();
+        unidad.setItems(unidades);
+        unidad.setItemLabelGenerator(Unidad::getNombre);
+    }
+
 }

@@ -126,10 +126,25 @@ public class UnidadesView extends Div implements BeforeEnterObserver {
 
     private final SerializableBiConsumer<Span, Unidad> EstadoComponenteActivo = (
             span, unidad) -> {
-        String theme = String.format("badge %s",
-                unidad.isActivo() ? "success" : "error");
+        boolean isActivo = unidad.isActivo();
+        String theme = isActivo ? "badge success" : "badge error";
         span.getElement().setAttribute("theme", theme);
-        span.setText(unidad.isActivo() ? "Activo" : "Desactivado");
+        span.setText(isActivo ? "Activo" : "Desactivado");
+        
+        // Asegurar que los estilos se apliquen correctamente
+        span.getElement().getStyle().set("padding", "0.25em 0.5em");
+        span.getElement().getStyle().set("border-radius", "4px");
+        span.getElement().getStyle().set("font-size", "0.875em");
+        span.getElement().getStyle().set("font-weight", "500");
+        span.getElement().getStyle().set("text-transform", "uppercase");
+        
+        if (isActivo) {
+            span.getElement().getStyle().set("background-color", "var(--lumo-success-color-10pct)");
+            span.getElement().getStyle().set("color", "var(--lumo-success-text-color)");
+        } else {
+            span.getElement().getStyle().set("background-color", "var(--lumo-error-color-10pct)");
+            span.getElement().getStyle().set("color", "var(--lumo-error-text-color)");
+        }
     };
 
     private ComponentRenderer<Span, Unidad> CrearComponmenteActivoRenderer() {
