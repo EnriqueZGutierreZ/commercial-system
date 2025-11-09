@@ -6,6 +6,7 @@ import com.elolympus.views.Administracion.PersonasView2;
 import com.elolympus.views.Administracion.RolesView;
 import com.elolympus.views.Administracion.UsuariosView;
 import com.elolympus.views.Empresa.EmpresaView;
+import com.elolympus.views.Empresa.SucursalView;
 import com.elolympus.views.Logistica.*;
 import com.elolympus.views.Ventas.BoletasView;
 import com.elolympus.views.Ventas.FacturasView;
@@ -131,10 +132,11 @@ public class MainLayout extends AppLayout {
         }
         //EMPRESA
         if (accessChecker.hasAccess(BienvenidaView.class)) {
-            SideNavItem ventas = new SideNavItem("Empresa");
-            ventas.setPrefixComponent(VaadinIcon.BUILDING.create());
-            ventas.addItem(new SideNavItem("Empresa", EmpresaView.class, VaadinIcon.BUILDING.create()));
-            nav.addItem(ventas);
+            SideNavItem empresa = new SideNavItem("Empresa");
+            empresa.setPrefixComponent(VaadinIcon.BUILDING.create());
+            empresa.addItem(new SideNavItem("Empresa", EmpresaView.class, VaadinIcon.BUILDING.create()));
+            empresa.addItem(new SideNavItem("Sucursal", SucursalView.class, VaadinIcon.BUILDING_O.create()));
+            nav.addItem(empresa);
         }
 
 //        if (accessChecker.hasAccess(HelloWorldView.class)) {
