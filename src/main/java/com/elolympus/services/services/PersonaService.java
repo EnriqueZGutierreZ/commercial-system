@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -28,6 +29,7 @@ public class PersonaService {
     public int count() {
         return (int) repository.count();
     }
+    @Transactional(readOnly = true)
     public List<Persona> findAll() {
         return repository.findAll();
     }
@@ -35,8 +37,15 @@ public class PersonaService {
         return repository.save(entity);
     }
 
+    @Transactional(readOnly = true)
     public Optional<Persona> get(Long id) {
-        return repository.findById(id);
+        Optional<Persona> persona = repository.findById(id);
+        // Forzar la carga de la dirección si existe
+        if (persona.isPresent() && persona.get().getDireccion() != null) {
+            // Acceder a la dirección para forzar su carga
+            persona.get().getDireccion().getDescripcion();
+        }
+        return persona;
     }
 
     public List<Persona> buscarPorNombresYApellidosActivos(String nombres, String apellidos) {

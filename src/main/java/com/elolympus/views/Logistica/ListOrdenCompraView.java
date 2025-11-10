@@ -15,6 +15,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
@@ -49,7 +50,6 @@ public class ListOrdenCompraView extends Div {
     //GRID
     private final Grid<OrdenCompra> grid = new Grid<>(OrdenCompra.class);
     private final DataGrid<OrdenCompra> dataGrid = new DataGrid<>(true,false);
-    private final Button editar = new Button("EDITAR");
     private final Button agregar = new Button("AGREGAR");
     private final Button eliminar = new Button("ELIMINAR");
     private final Button cancelar = new Button("CANCELAR");
@@ -80,7 +80,7 @@ public class ListOrdenCompraView extends Div {
 
 
         this.panelFiltro.add(Sucursal,FechaInicio,FechaFin);
-        this.panelButton.add(editar,agregar,eliminar,cancelar);
+        this.panelButton.add(agregar,eliminar,cancelar);
         this.panel.add(panelFiltro,dataGrid,panelButton);
         this.add(panel);
         init();
@@ -129,7 +129,13 @@ public class ListOrdenCompraView extends Div {
 //        dataGrid.addColumn(OrdenCompra::getDocumento_pago,"Documento Pago");
 //        dataGrid.addColumn(OrdenCompra::getTotal,"Total");
 
-        //dataGrid.asSingleSelect().addValueChangeListener(evt -> editOrdenCompra(evt.getValue()));
+        // Configurar doble clic para editar orden
+        dataGrid.addItemDoubleClickListener(event -> {
+            OrdenCompra ordenSeleccionada = event.getItem();
+            if (ordenSeleccionada != null) {
+                editOrdenCompra(ordenSeleccionada);
+            }
+        });
     }
 
     private void refreshGrids() {
@@ -173,7 +179,43 @@ public class ListOrdenCompraView extends Div {
 
 
     private void editOrdenCompra(OrdenCompra ordenCompra){
-
+        // Crear vista de orden de compra en modo edición
+        OrdenCompraView ordenCompraView = new OrdenCompraView(this.ordenCompraService, this.ordenCompraDetService,
+                                                             this.almacenService, this.personaService,
+                                                             this.direccionService, this.sucursalService,
+                                                             this.productoService);
+        
+        // Configurar la orden a editar
+        ordenCompraView.setOrdenCompraParaEdicion(ordenCompra);
+        
+        Dialog view = new Dialog();
+        view.setHeaderTitle("EDITAR ORDEN DE COMPRA - ID: " + ordenCompra.getId());
+        
+        // Agregar botón X explícitamente en el header
+        Button closeButton = new Button(VaadinIcon.CLOSE.create(), e -> view.close());
+        closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+        view.getHeader().add(closeButton);
+        
+        // Agregar botón X para cerrar
+        view.setCloseOnEsc(true);            // Cerrar con tecla ESC
+        view.setCloseOnOutsideClick(false);  // No cerrar al hacer clic afuera
+        
+        // Configurar tamaño del dialog
+        view.setWidth("95vw");        // 95% del ancho de la ventana
+        view.setHeight("90vh");       // 90% del alto de la ventana
+        view.setMaxWidth("1400px");   // Máximo 1400px de ancho
+        view.setMaxHeight("900px");   // Máximo 900px de alto
+        view.setResizable(true);      // Permitir redimensionar
+        view.setDraggable(true);      // Permitir arrastrar
+        
+        // Configurar la vista dentro del dialog
+        ordenCompraView.setSizeFull();
+        view.add(ordenCompraView);
+        
+        // Agregar listener para refrescar la lista cuando se cierre el dialog
+        view.addDialogCloseActionListener(e -> refreshGrids());
+        
+        view.open();
     }
 
 

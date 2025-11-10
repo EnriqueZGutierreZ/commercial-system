@@ -11,14 +11,14 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.sql.Date;
 
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, exclude = {"ordenCompra"})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "orden_compra_det",schema = "logistica")
 public class OrdenCompraDet extends AbstractEntity {
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "orden_compra", referencedColumnName = "id")
     private OrdenCompra ordenCompra;
 

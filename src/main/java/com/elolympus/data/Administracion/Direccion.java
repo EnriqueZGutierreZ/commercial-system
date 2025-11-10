@@ -32,7 +32,8 @@ public class Direccion extends AbstractEntity {
 //    @OneToOne(mappedBy = "direccion")
 //    private Persona persona;
 
-    @OneToOne
+    @ManyToOne
+    @JoinColumn(name = "ubigeo_id")
     public Ubigeo ubigeo;
     
     // Getters y setters manuales por si Lombok no funciona

@@ -7,6 +7,7 @@ import com.elolympus.services.repository.DireccionRepository;
 import com.elolympus.services.specifications.UsuarioSpecifications;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,6 +21,7 @@ public class DireccionService {
         this.repository = repository;
     }
 
+    @Transactional(readOnly = true)
     public List<Direccion> findAll() {
         return repository.findAll();
     }

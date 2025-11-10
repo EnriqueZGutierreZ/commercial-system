@@ -20,14 +20,17 @@ public class OrdenCompraDetService {
         this.repository = ordenCompraDetRepository;
     }
 
+    @Transactional
     public OrdenCompraDet save(OrdenCompraDet ordenCompraDet) {
         return repository.save(ordenCompraDet);
     }
 
+    @Transactional
     public OrdenCompraDet update(OrdenCompraDet ordenCompraDet) {
         return repository.save(ordenCompraDet);
     }
 
+    @Transactional
     public void delete(OrdenCompraDet ordenCompraDet) {
         repository.delete(ordenCompraDet);
     }
@@ -37,10 +40,10 @@ public class OrdenCompraDetService {
         return repository.findAll();
     }
 
+    @Transactional(readOnly = true)
     public List<OrdenCompraDet> findByordenCompra(OrdenCompra ordenCompra) {
         Specification<OrdenCompraDet> spec = OrdenCompraSpecifications.byordenCompra(ordenCompra);
         return repository.findAll(spec);
-
     }
 
 }

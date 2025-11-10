@@ -79,5 +79,13 @@ public class UbigeoService {
                 return null;
         }
     }
+
+    public Optional<Ubigeo> getUbigeoByCodigo(String codigo) {
+        return ubigeoRepository.findByCodigo(codigo);
+    }
+
+    public Ubigeo save(Ubigeo ubigeo) {
+        return ubigeoRepository.save(ubigeo);
+    }
 }
 

@@ -1,12 +1,17 @@
 package com.elolympus.views.Administracion;
 
+import com.elolympus.data.Administracion.Direccion;
 import com.elolympus.data.Administracion.Persona;
+import com.elolympus.services.services.DireccionService;
 import com.elolympus.services.services.PersonaService;
+import com.elolympus.services.services.UbigeoService;
 import com.elolympus.views.MainLayout;
+import com.elolympus.views.direccion.DireccionView;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
@@ -42,8 +47,11 @@ import java.util.List;
 public class PersonasView extends Div implements BeforeEnterObserver{
 
     private final PersonaService PersonaService;
+    private final UbigeoService ubigeoService;
+    private final DireccionService direccionService;
     private BeanValidationBinder<Persona> binder;
     private Persona persona;
+    private Direccion direccion;
 
     public final String PERSONA_ID = "PersonaID";
     public final String PERSONA_EDIT_ROUTE_TEMPLATE = "persona/%s/edit";
@@ -65,14 +73,21 @@ public class PersonasView extends Div implements BeforeEnterObserver{
     public TextField email             = new TextField("Correo","");
     public TextField sexo              = new TextField("Sexo","");
     public TextField creador           = new TextField("Creador", "");
+    public TextField txtdireccion      = new TextField("Direccion", "");
+    {
+        txtdireccion.setReadOnly(true);
+    }
+    private final Button btnDireccion  = new Button("Obtener Direccion");
     private final Button cancel = new Button("Cancelar");
     private final Button save = new Button("Guardar");
     private final Button delete = new Button("Eliminar",VaadinIcon.TRASH.create());
     public final SplitLayout splitLayout = new SplitLayout();
 
     @Autowired
-    public PersonasView(PersonaService PersonaService) {
+    public PersonasView(PersonaService PersonaService, UbigeoService ubigeoService, DireccionService direccionService) {
         this.PersonaService = PersonaService;
+        this.ubigeoService = ubigeoService;
+        this.direccionService = direccionService;
         try {
             // Configure Form
             binder = new BeanValidationBinder<>(Persona.class);
@@ -97,6 +112,7 @@ public class PersonasView extends Div implements BeforeEnterObserver{
         txtDni.addValueChangeListener(e->onBtnFiltrar());
         txtApellidos.addValueChangeListener(e->onBtnFiltrar());
         txtNombres.addValueChangeListener(e->onBtnFiltrar());
+        btnDireccion.addClickListener(e->getDireccion());
         toggleButton.addClickListener(event -> {
             boolean isVisible = tophl.isVisible();
             tophl.setVisible(!isVisible);
@@ -142,8 +158,13 @@ public class PersonasView extends Div implements BeforeEnterObserver{
         Div editorDiv = new Div();
         editorDiv.setClassName("editor");
         editorLayoutDiv.add(editorDiv);
+        HorizontalLayout direccionLayout = new HorizontalLayout(txtdireccion, btnDireccion);
+        direccionLayout.setAlignItems(FlexComponent.Alignment.END);
+        direccionLayout.setWidthFull();
+        txtdireccion.setWidthFull();
         formLayout.add(nombres, apellidos,
                 tipo_documento, num_documento, celular, email, sexo, creador);
+        formLayout.add(direccionLayout);
         editorDiv.add(formLayout);
         createButtonLayout(editorLayoutDiv);
         splitLayout.addToSecondary(editorLayoutDiv);
@@ -196,6 +217,12 @@ public class PersonasView extends Div implements BeforeEnterObserver{
                 this.persona = new Persona();
             }
             binder.writeBean(this.persona);
+            
+            // Asociar la dirección a la persona si existe
+            if (this.direccion != null) {
+                this.persona.setDireccion(this.direccion);
+            }
+            
             PersonaService.update(this.persona);
             clearForm();
             refreshGrid();
@@ -242,10 +269,16 @@ public class PersonasView extends Div implements BeforeEnterObserver{
     public void asSingleSelect(Persona persona, Button btnSave) {
         if (persona != null) {
             btnSave.setText("Actualizar");
-            UI.getCurrent().navigate(String.format(this.PERSONA_EDIT_ROUTE_TEMPLATE, persona.getId()));
+            
+            // Recargar la persona completa desde la base de datos para asegurar que la dirección esté cargada
+            Optional<Persona> personaCompleta = PersonaService.get(persona.getId());
+            if (personaCompleta.isPresent()) {
+                populateForm(personaCompleta.get());
+            } else {
+                populateForm(persona);
+            }
         } else {
             clearForm();
-            UI.getCurrent().navigate(PersonasView.class);
             btnSave.setText("Guardar");
         }
     }
@@ -267,6 +300,53 @@ public class PersonasView extends Div implements BeforeEnterObserver{
     private void populateForm(Persona value) {
         this.persona = value;
         binder.readBean(this.persona);
+        
+        // Cargar la información de la dirección si existe
+        if (this.persona != null) {
+            if (this.persona.getDireccion() != null) {
+                this.direccion = this.persona.getDireccion();
+                txtdireccion.setValue(this.direccion.getDescripcion() + " - " + this.direccion.getReferencia());
+            } else {
+                this.direccion = null;
+                txtdireccion.setValue("");
+            }
+        } else {
+            this.direccion = null;
+            txtdireccion.setValue("");
+        }
+    }
+
+    private void getDireccion() {
+        DireccionView direccionView = new DireccionView(ubigeoService, direccionService);
+        direccionView.setHeaderTitle("DIRECCION");
+        
+        // Si ya existe una dirección, cargarla en el formulario para edición
+        if (this.direccion != null) {
+            direccionView.direccion = this.direccion;
+            direccionView.populateForm();
+        }
+        
+        direccionView.addDireccionGuardadaListener(event -> {
+            Direccion direccionGuardada = event.getDireccion();
+            if (direccionGuardada != null) {
+                this.direccion = direccionGuardada;
+                txtdireccion.setValue(direccionGuardada.getDescripcion() + " - " + direccionGuardada.getReferencia());
+                
+                // Asociar inmediatamente la dirección a la persona si existe
+                if (this.persona != null) {
+                    this.persona.setDireccion(this.direccion);
+                    
+                    // Guardar la persona con la nueva dirección
+                    try {
+                        PersonaService.update(this.persona);
+                        Notification.show("Dirección asociada correctamente", 3000, Notification.Position.MIDDLE);
+                    } catch (Exception ex) {
+                        Notification.show("Error al asociar dirección: " + ex.getMessage(), 5000, Notification.Position.MIDDLE);
+                    }
+                }
+            }
+        });
+        direccionView.open();
     }
 
     @Override

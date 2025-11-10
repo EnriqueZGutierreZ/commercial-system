@@ -667,5 +667,21 @@ public class OrdenCompraView extends Div {
 
     }
 
+    // Método para configurar la orden de compra en modo edición
+    public void setOrdenCompraParaEdicion(OrdenCompra ordenCompraExistente) {
+        if (ordenCompraExistente != null) {
+            this.ordenCompra = ordenCompraExistente;
+            
+            // Cargar los datos de la orden en el formulario
+            binder.readBean(this.ordenCompra);
+            
+            // Cargar los detalles de la orden
+            refreshGrids();
+            
+            // Cambiar el texto del botón para indicar que es edición
+            guardarOrden.setText("ACTUALIZAR");
+        }
+    }
+
 
 }

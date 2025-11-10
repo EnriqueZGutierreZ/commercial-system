@@ -38,7 +38,7 @@ public class Persona extends AbstractEntity {
     @Column(name = "celular", length = 15, nullable = false)
     private Integer celular;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Direccion direccion;
 
 //    @OneToOne

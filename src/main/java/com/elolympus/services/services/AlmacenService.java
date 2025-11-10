@@ -4,6 +4,7 @@ import com.elolympus.data.Almacen.Almacen;
 import com.elolympus.services.repository.AlmacenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -16,6 +17,7 @@ public class AlmacenService {
         this.repository = almacenRepository;
     }
 
+    @Transactional(readOnly = true)
     public List<Almacen> findAll() {
         return repository.findAll();
     }

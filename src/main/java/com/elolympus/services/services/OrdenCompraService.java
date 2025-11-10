@@ -17,14 +17,17 @@ public class OrdenCompraService {
         this.repository = ordenCompraRepository;
     }
 
+    @Transactional
     public OrdenCompra save(OrdenCompra ordenCompra) {
         return repository.save(ordenCompra);
     }
 
+    @Transactional
     public OrdenCompra update(OrdenCompra ordenCompra) {
         return repository.save(ordenCompra);
     }
 
+    @Transactional
     public void delete(OrdenCompra ordenCompra) {
         repository.delete(ordenCompra);
     }
