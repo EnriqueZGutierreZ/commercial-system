@@ -25,6 +25,8 @@ import com.vaadin.flow.component.textfield.BigDecimalField;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.PageTitle;
@@ -88,6 +90,24 @@ public class OrdenRegularizacionView extends Div {
 
     private void refreshGrids() {
         gridOrdenRegularizacion.setItems(ordenRegService.findAll());
+    }
+    
+    private void updateList(String searchText) {
+        if (searchText == null || searchText.trim().isEmpty()) {
+            gridOrdenRegularizacion.setItems(ordenRegService.findAll());
+        } else {
+            gridOrdenRegularizacion.setItems(
+                ordenRegService.findAll().stream()
+                    .filter(orden -> 
+                        (orden.getNumero() != null && orden.getNumero().toString().toLowerCase().contains(searchText.toLowerCase())) ||
+                        (orden.getMovimiento() != null && orden.getMovimiento().toLowerCase().contains(searchText.toLowerCase())) ||
+                        (orden.getAlmacen() != null && orden.getAlmacen().getDescripcion() != null && 
+                         orden.getAlmacen().getDescripcion().toLowerCase().contains(searchText.toLowerCase())) ||
+                        (orden.getObservaciones() != null && orden.getObservaciones().toLowerCase().contains(searchText.toLowerCase()))
+                    )
+                    .toList()
+            );
+        }
     }
 
     private void setupGrid() {
@@ -166,10 +186,31 @@ public class OrdenRegularizacionView extends Div {
     private Component createGridLayout() {
         HorizontalLayout busquedaDiv = new HorizontalLayout();
         busquedaDiv.addClassName("tophl");
+        
+        // Agregar componentes de búsqueda
+        TextField searchField = new TextField("Buscar");
+        searchField.setPlaceholder("Buscar por número, almacén o movimiento...");
+        searchField.setPrefixComponent(new Icon(com.vaadin.flow.component.icon.VaadinIcon.SEARCH));
+        searchField.addValueChangeListener(e -> updateList(e.getValue()));
+        
+        Button newButton = new Button("Nueva Orden");
+        newButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        newButton.addClickListener(e -> {
+            clearForm();
+            ordenRegularizacion = new OrdenRegularizacion();
+            binder.readBean(ordenRegularizacion);
+        });
+        
+        busquedaDiv.add(searchField, newButton);
+        busquedaDiv.setDefaultVerticalComponentAlignment(com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.END);
+        busquedaDiv.setJustifyContentMode(com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode.BETWEEN);
+        busquedaDiv.setWidthFull();
+        
         Div gridContainer = new Div();
         gridContainer.addClassName("grid-wrapper");
-        gridContainer.add(busquedaDiv,gridOrdenRegularizacion);
+        gridContainer.add(busquedaDiv, gridOrdenRegularizacion);
         gridContainer.setSizeFull();
+        gridOrdenRegularizacion.setSizeFull();
         return gridContainer;
     }
 
