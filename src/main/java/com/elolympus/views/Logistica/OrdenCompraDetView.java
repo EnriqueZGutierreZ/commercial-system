@@ -5,7 +5,9 @@ import com.elolympus.data.Logistica.OrdenCompraDet;
 import com.elolympus.services.services.OrdenCompraDetService;
 import com.elolympus.services.services.OrdenCompraService;
 import com.elolympus.services.services.ProductoService;
+import com.elolympus.services.services.AlmacenService;
 import com.elolympus.data.Logistica.Producto;
+import com.elolympus.data.Almacen.Almacen;
 import com.elolympus.views.MainLayout;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -39,6 +41,7 @@ public class OrdenCompraDetView extends Div {
     //private final OrdenCompraService ordenCompraService;
     private final OrdenCompraDetService ordenCompraDetService;
     private final ProductoService productoService;
+    private final AlmacenService almacenService;
     private OrdenCompra ordenCompra;
     private OrdenCompraDet ordenCompraDet;
     private final BeanValidationBinder<OrdenCompra> binder= new BeanValidationBinder<>(OrdenCompra.class);
@@ -67,7 +70,7 @@ public class OrdenCompraDetView extends Div {
     private final BigDecimalField precioUnitario = new BigDecimalField("Precio Unitario");
     private final BigDecimalField totaldet = new BigDecimalField("Total");
     private final BigDecimalField descuento = new BigDecimalField("Descuento");
-    private final IntegerField almacen = new IntegerField("Almacen");
+    private final ComboBox<Almacen> almacen = new ComboBox<>("Almacén");
     private final BigDecimalField cantidadTg = new BigDecimalField("Cantidad Tg");
     private final TextField lote = new TextField("Lote");
     private final DatePicker fechaVencimiento = new DatePicker("Fecha Vencimiento");
@@ -83,9 +86,10 @@ public class OrdenCompraDetView extends Div {
     private final FormLayout detailForm = new FormLayout();
 
     //constructor
-    public OrdenCompraDetView(OrdenCompraDetService ordenCompraDetService, ProductoService productoService) {
+    public OrdenCompraDetView(OrdenCompraDetService ordenCompraDetService, ProductoService productoService, AlmacenService almacenService) {
         this.ordenCompraDetService = ordenCompraDetService;
         this.productoService = productoService;
+        this.almacenService = almacenService;
         init();
     }
     private void init(){
@@ -174,6 +178,10 @@ public class OrdenCompraDetView extends Div {
         // Load productos for the combo box
         producto.setItems(productoService.findActive());
         producto.setItemLabelGenerator(Producto::getNombre);
+        
+        // Load almacenes for the combo box
+        almacen.setItems(almacenService.findAll());
+        almacen.setItemLabelGenerator(Almacen::getDescripcion);
         
         binderDet.forField(producto).bind(OrdenCompraDet::getProducto, OrdenCompraDet::setProducto);
         binderDet.forField(cantidad).bind(OrdenCompraDet::getCantidad, OrdenCompraDet::setCantidad);

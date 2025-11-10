@@ -1,6 +1,7 @@
 package com.elolympus.data.Logistica;
 
 import com.elolympus.data.AbstractEntity;
+import com.elolympus.data.Almacen.Almacen;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -37,8 +38,9 @@ public class OrdenCompraDet extends AbstractEntity {
     @Column(name = "descuento")
     private BigDecimal descuento;
 
-    @Column(name = "almacen")
-    private Integer almacen;
+    @ManyToOne
+    @JoinColumn(name = "almacen_id")
+    private Almacen almacen;
 
     @Column(name = "cantidad_tg")
     private BigDecimal cantidadTg;

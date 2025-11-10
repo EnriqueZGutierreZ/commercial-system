@@ -3,6 +3,12 @@ package com.elolympus.views.Logistica;
 import com.elolympus.component.DataGrid;
 import com.elolympus.data.Logistica.OrdenCompra;
 import com.elolympus.services.services.OrdenCompraService;
+import com.elolympus.services.services.OrdenCompraDetService;
+import com.elolympus.services.services.AlmacenService;
+import com.elolympus.services.services.PersonaService;
+import com.elolympus.services.services.DireccionService;
+import com.elolympus.services.services.SucursalService;
+import com.elolympus.services.services.ProductoService;
 import com.elolympus.views.MainLayout;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
@@ -31,6 +37,12 @@ public class ListOrdenCompraView extends Div {
 
 
     private final OrdenCompraService ordenCompraService;
+    private final OrdenCompraDetService ordenCompraDetService;
+    private final AlmacenService almacenService;
+    private final PersonaService personaService;
+    private final DireccionService direccionService;
+    private final SucursalService sucursalService;
+    private final ProductoService productoService;
     private OrdenCompra ordenCompra;
     private final BeanValidationBinder<OrdenCompra> binder= new BeanValidationBinder<>(OrdenCompra.class);
 
@@ -54,8 +66,17 @@ public class ListOrdenCompraView extends Div {
     private final DatePicker FechaFin        = new DatePicker("Fecha Fin",LocalDate.now());
 
     //constructor
-    public ListOrdenCompraView(OrdenCompraService ordenCompraService) {
+    public ListOrdenCompraView(OrdenCompraService ordenCompraService, OrdenCompraDetService ordenCompraDetService,
+                              AlmacenService almacenService, PersonaService personaService,
+                              DireccionService direccionService, SucursalService sucursalService,
+                              ProductoService productoService) {
         this.ordenCompraService = ordenCompraService;
+        this.ordenCompraDetService = ordenCompraDetService;
+        this.almacenService = almacenService;
+        this.personaService = personaService;
+        this.direccionService = direccionService;
+        this.sucursalService = sucursalService;
+        this.productoService = productoService;
 
 
         this.panelFiltro.add(Sucursal,FechaInicio,FechaFin);
@@ -118,9 +139,23 @@ public class ListOrdenCompraView extends Div {
 
 
     private void add(){
-        OrdenCompraView ordenCompra = new OrdenCompraView(this.ordenCompraService);
+        OrdenCompraView ordenCompra = new OrdenCompraView(this.ordenCompraService, this.ordenCompraDetService,
+                                                         this.almacenService, this.personaService,
+                                                         this.direccionService, this.sucursalService,
+                                                         this.productoService);
         Dialog view = new Dialog();
         view.setHeaderTitle("ORDEN DE COMPRA");
+        
+        // Configurar tamaño del dialog
+        view.setWidth("95vw");        // 95% del ancho de la ventana
+        view.setHeight("90vh");       // 90% del alto de la ventana
+        view.setMaxWidth("1400px");   // Máximo 1400px de ancho
+        view.setMaxHeight("900px");   // Máximo 900px de alto
+        view.setResizable(true);      // Permitir redimensionar
+        view.setDraggable(true);      // Permitir arrastrar
+        
+        // Configurar la vista dentro del dialog
+        ordenCompra.setSizeFull();
         view.add(ordenCompra);
         view.open();
     }

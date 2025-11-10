@@ -2,6 +2,10 @@ package com.elolympus.data.Logistica;
 
 import com.elolympus.data.AbstractEntity;
 import com.elolympus.data.Auxiliar.CCA;
+import com.elolympus.data.Administracion.Persona;
+import com.elolympus.data.Administracion.Direccion;
+import com.elolympus.data.Almacen.Almacen;
+import com.elolympus.data.Empresa.Sucursal;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -40,14 +44,17 @@ public class OrdenCompra extends AbstractEntity {
     @Column(name = "activo", nullable = false)
     private Boolean activo;
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @Column(name = "almacen_entrega")
-    private Integer almacenEntrega;
+    @ManyToOne
+    @JoinColumn(name = "almacen_entrega_id")
+    private Almacen almacenEntrega;
 
-    @Column(name = "numero_proveedor")
-    private Integer numeroProveedor;
+    @ManyToOne
+    @JoinColumn(name = "proveedor_id")
+    private Persona proveedor;
 
-    @Column(name = "direccion_proveedor")
-    private Integer direccionProveedor;
+    @ManyToOne
+    @JoinColumn(name = "direccion_proveedor_id")
+    private Direccion direccionProveedor;
 
     @Column(name = "fecha")
     private Date fecha;
@@ -79,8 +86,9 @@ public class OrdenCompra extends AbstractEntity {
     @Column(name = "dias_credito")
     private Integer diasCredito;
 
-    @Column(name = "sucursal")
-    private Integer sucursal;
+    @ManyToOne
+    @JoinColumn(name = "sucursal_id")
+    private Sucursal sucursal;
 
     @Column(name = "impuesto_incluido")
     private Boolean impuesto_incluido;

@@ -105,9 +105,18 @@ public class OrdenCompraViewnackup extends Dialog {
     }
 
     private void initDataGrid(){
-        dataGrid.addColumn(OrdenCompra::getAlmacenEntrega,"Almacen Entrega");
-        dataGrid.addColumn(OrdenCompra::getNumeroProveedor,"Numero Proveedor");
-        dataGrid.addColumn(OrdenCompra::getDireccionProveedor,"Direccion Proveedor");
+        dataGrid.addColumn(orden -> 
+                orden.getAlmacenEntrega() != null ? orden.getAlmacenEntrega().getDescripcion() : "")
+                .setHeader("Almacén Entrega")
+                .setAutoWidth(true);
+        dataGrid.addColumn(orden -> 
+                orden.getProveedor() != null ? orden.getProveedor().getNombreCompleto() : "")
+                .setHeader("Proveedor")
+                .setAutoWidth(true);
+        dataGrid.addColumn(orden -> 
+                orden.getDireccionProveedor() != null ? orden.getDireccionProveedor().getDescripcion() : "")
+                .setHeader("Dirección Proveedor")
+                .setAutoWidth(true);
         dataGrid.addColumn(OrdenCompra::getFecha,"Fecha");
         dataGrid.addColumn(OrdenCompra::getFechaEntrega,"Fecha Entrega");
         dataGrid.addColumn(OrdenCompra::getMoneda,"Moneda");
@@ -116,7 +125,10 @@ public class OrdenCompraViewnackup extends Dialog {
         dataGrid.addColumn(OrdenCompra::getTotalCobrado,"Total Cobrado");
         dataGrid.addColumn(OrdenCompra::getTipoCambio,"Tipo Cambio");
         dataGrid.addColumn(OrdenCompra::getDiasCredito,"Credias/Dias");
-        dataGrid.addColumn(OrdenCompra::getSucursal,"Sucursal");
+        dataGrid.addColumn(orden -> 
+                orden.getSucursal() != null ? orden.getSucursal().getDescripcion() : "")
+                .setHeader("Sucursal")
+                .setAutoWidth(true);
         dataGrid.addColumn(OrdenCompra::getImpuesto_incluido,"Impuesto Incluido");
         dataGrid.addColumn(OrdenCompra::getDocumento_pago,"Documento Pago");
         dataGrid.addColumn(OrdenCompra::getTotal,"Total");

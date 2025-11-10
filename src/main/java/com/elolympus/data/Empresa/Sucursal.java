@@ -39,7 +39,46 @@ public class Sucursal extends AbstractEntity {
     @Column(name = "serie", nullable = false)
     private Integer serie;
 
-
+    // Getters manuales mientras Lombok no funciona correctamente
+    public String getDescripcion() {
+        return descripcion;
+    }
+    
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
+    
+    public Integer getCodigo() {
+        return codigo;
+    }
+    
+    public void setCodigo(Integer codigo) {
+        this.codigo = codigo;
+    }
+    
+    public Empresa getEmpresa() {
+        return empresa;
+    }
+    
+    public void setEmpresa(Empresa empresa) {
+        this.empresa = empresa;
+    }
+    
+    public boolean isPrincipal() {
+        return principal;
+    }
+    
+    public void setPrincipal(boolean principal) {
+        this.principal = principal;
+    }
+    
+    public Integer getSerie() {
+        return serie;
+    }
+    
+    public void setSerie(Integer serie) {
+        this.serie = serie;
+    }
 
 
 }

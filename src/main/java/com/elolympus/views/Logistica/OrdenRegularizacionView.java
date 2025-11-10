@@ -120,7 +120,7 @@ public class OrdenRegularizacionView extends Div {
         gridOrdenRegularizacion.asSingleSelect().addValueChangeListener(event -> editOrdenRegularizacion(event.getValue()));
         gridOrdenRegularizacion.setItemDetailsRenderer(new ComponentRenderer<>(ordenRegularizacion -> {
             detailGrid.setItems(ordenRegDetService.findByOrdenRegularizacion(ordenRegularizacion)); // Suponiendo que este método devuelve los detalles relacionados.
-            detailGrid.setColumns("producto", "cantidad", "cantidadFraccion", "fechaVencimiento");
+            detailGrid.setColumns("cantidad", "cantidadFraccion", "fechaVencimiento");
             detailGrid.addColumn(ordenRegularizacionDet -> ordenRegularizacionDet.getProducto() != null ? ordenRegularizacionDet.getProducto().getNombre() : "")
                     .setHeader("Producto")
                     .setAutoWidth(true);
