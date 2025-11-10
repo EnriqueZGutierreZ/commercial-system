@@ -5,7 +5,9 @@ import com.elolympus.data.Almacen.OrdenRegularizacionDet;
 import com.elolympus.services.services.OrdenRegDetService;
 import com.elolympus.services.services.OrdenRegService;
 import com.elolympus.services.services.ProductoService;
+import com.elolympus.services.services.AlmacenService;
 import com.elolympus.data.Logistica.Producto;
+import com.elolympus.data.Almacen.Almacen;
 import com.elolympus.views.MainLayout;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -39,6 +41,7 @@ public class OrdenRegularizacionView extends Div {
     private final OrdenRegService ordenRegService;
     private final OrdenRegDetService ordenRegDetService;
     private final ProductoService productoService;
+    private final AlmacenService almacenService;
     private OrdenRegularizacion ordenRegularizacion;
     private OrdenRegularizacionDet ordenRegularizacionDet;
     private final BeanValidationBinder<OrdenRegularizacion> binder= new BeanValidationBinder<>(OrdenRegularizacion.class);
@@ -47,7 +50,7 @@ public class OrdenRegularizacionView extends Div {
     //Componentes UI Orden de Regularización
     private final IntegerField numero = new IntegerField("Número");
     private final DatePicker fecha = new DatePicker("Fecha");
-    private final IntegerField almacen = new IntegerField("Almacén");
+    private final ComboBox<Almacen> almacen = new ComboBox<>("Almacén");
     private final TextField movimiento = new TextField("Movimiento");
     private final TextField observaciones = new TextField("Observaciones");
 
@@ -65,10 +68,11 @@ public class OrdenRegularizacionView extends Div {
     //private final FormLayout formLayout = new FormLayout();
     private final FormLayout headerFormLayout = new FormLayout();
     private final FormLayout detailFormLayout = new FormLayout();
-    public OrdenRegularizacionView(OrdenRegService ordenRegService, OrdenRegDetService ordenRegDetService, ProductoService productoService) {
+    public OrdenRegularizacionView(OrdenRegService ordenRegService, OrdenRegDetService ordenRegDetService, ProductoService productoService, AlmacenService almacenService) {
         this.ordenRegService = ordenRegService;
         this.ordenRegDetService = ordenRegDetService;
         this.productoService = productoService;
+        this.almacenService = almacenService;
         init();
     }
     private void init() {
@@ -88,7 +92,11 @@ public class OrdenRegularizacionView extends Div {
 
     private void setupGrid() {
         gridOrdenRegularizacion.setClassName("grilla");
-        gridOrdenRegularizacion.setColumns("numero", "fecha", "almacen", "movimiento", "observaciones");
+        gridOrdenRegularizacion.setColumns("numero", "fecha", "movimiento", "observaciones");
+        gridOrdenRegularizacion.addColumn(ordenRegularizacion -> 
+                ordenRegularizacion.getAlmacen() != null ? ordenRegularizacion.getAlmacen().getDescripcion() : "")
+                .setHeader("Almacén")
+                .setAutoWidth(true);
         gridOrdenRegularizacion.asSingleSelect().addValueChangeListener(event -> editOrdenRegularizacion(event.getValue()));
         gridOrdenRegularizacion.setItemDetailsRenderer(new ComponentRenderer<>(ordenRegularizacion -> {
             detailGrid.setItems(ordenRegDetService.findByOrdenRegularizacion(ordenRegularizacion)); // Suponiendo que este método devuelve los detalles relacionados.
@@ -173,6 +181,13 @@ public class OrdenRegularizacionView extends Div {
                         "Fecha inválida"
                 )
                 .bind(OrdenRegularizacion::getFecha, OrdenRegularizacion::setFecha);
+        
+        // Configurar ComboBox de almacén
+        almacen.setItems(almacenService.findAll());
+        almacen.setItemLabelGenerator(Almacen::getDescripcion);
+        binder.forField(almacen)
+                .bind(OrdenRegularizacion::getAlmacen, OrdenRegularizacion::setAlmacen);
+                
         //binder de detalles
         // Load productos for the combo box
         producto.setItems(productoService.findActive());

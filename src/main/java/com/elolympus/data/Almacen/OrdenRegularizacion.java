@@ -15,8 +15,9 @@ public class OrdenRegularizacion extends AbstractEntity {
     @Column(name = "fecha")
     private Date fecha;
 
-    @Column(name = "almacen")
-    private Integer almacen;
+    @ManyToOne
+    @JoinColumn(name = "almacen_id", nullable = false)
+    private Almacen almacen;
 
     @Column(name = "movimiento")
     private String movimiento;
@@ -32,7 +33,7 @@ public class OrdenRegularizacion extends AbstractEntity {
     }
 
     //Constructor con parametros
-    public OrdenRegularizacion(Integer numero, Date fecha, Integer almacen, String movimiento, String observaciones, List<OrdenRegularizacionDet> detalles) {
+    public OrdenRegularizacion(Integer numero, Date fecha, Almacen almacen, String movimiento, String observaciones, List<OrdenRegularizacionDet> detalles) {
         this.numero = numero;
         this.fecha = fecha;
         this.almacen = almacen;
@@ -58,11 +59,11 @@ public class OrdenRegularizacion extends AbstractEntity {
         this.fecha = fecha;
     }
 
-    public Integer getAlmacen() {
+    public Almacen getAlmacen() {
         return almacen;
     }
 
-    public void setAlmacen(Integer almacen) {
+    public void setAlmacen(Almacen almacen) {
         this.almacen = almacen;
     }
 
