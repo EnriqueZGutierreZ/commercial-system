@@ -7,6 +7,7 @@ import com.elolympus.services.repository.OrdenCompraRepository;
 import com.elolympus.services.specifications.OrdenCompraSpecifications;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -31,6 +32,7 @@ public class OrdenCompraDetService {
         repository.delete(ordenCompraDet);
     }
 
+    @Transactional(readOnly = true)
     public List<OrdenCompraDet> findAll() {
         return repository.findAll();
     }

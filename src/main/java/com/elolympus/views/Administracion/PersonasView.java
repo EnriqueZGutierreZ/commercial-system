@@ -20,6 +20,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
@@ -58,7 +59,7 @@ public class PersonasView extends Div implements BeforeEnterObserver{
     public FormLayout formLayout = new FormLayout();
     public TextField nombres           = new TextField("Nombres","");
     public TextField apellidos         = new TextField("Apellidos","");
-    public IntegerField tipo_documento    = new IntegerField("Tipo de Documento","");
+    public ComboBox<String> tipo_documento = new ComboBox<>("Tipo de Documento");
     public IntegerField num_documento     = new IntegerField("DNI","");
     public IntegerField celular           = new IntegerField("Celular","");
     public TextField email             = new TextField("Correo","");
@@ -81,6 +82,8 @@ public class PersonasView extends Div implements BeforeEnterObserver{
             System.out.println("ERRORRRR: " + e.getMessage());
         }
 
+        // Configurar ComboBox de tipo de documento
+        configurarTipoDocumento();
 
         addClassNames("persona-view");
         // Create UI
@@ -283,6 +286,41 @@ public class PersonasView extends Div implements BeforeEnterObserver{
                 event.forwardTo(PersonasView.class);
             }
         }
+    }
+
+    private void configurarTipoDocumento() {
+        // Configurar opciones del ComboBox
+        tipo_documento.setItems("DNI", "RUC", "Carné de Extranjería", "Pasaporte");
+        tipo_documento.setPlaceholder("Seleccione tipo de documento");
+        
+        // Configurar el binding para convertir String a Integer y viceversa
+        binder.forField(tipo_documento)
+                .withConverter(
+                    // String to Integer converter
+                    tipoStr -> {
+                        if (tipoStr == null) return null;
+                        return switch (tipoStr) {
+                            case "DNI" -> 1;
+                            case "RUC" -> 2;
+                            case "Carné de Extranjería" -> 3;
+                            case "Pasaporte" -> 4;
+                            default -> null;
+                        };
+                    },
+                    // Integer to String converter
+                    tipoInt -> {
+                        if (tipoInt == null) return null;
+                        return switch (tipoInt) {
+                            case 1 -> "DNI";
+                            case 2 -> "RUC";
+                            case 3 -> "Carné de Extranjería";
+                            case 4 -> "Pasaporte";
+                            default -> "";
+                        };
+                    },
+                    "Seleccione un tipo de documento válido"
+                )
+                .bind(Persona::getTipo_documento, Persona::setTipo_documento);
     }
 }
 
