@@ -7,6 +7,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
 
 import java.math.BigDecimal;
 import java.sql.Date;
@@ -20,12 +23,14 @@ public class Kardex extends AbstractEntity {
     @Column(name = "orden_id")
     private Integer ordenId;
 
+    @NotNull(message = "La fecha es requerida")
     @Column(name = "fecha")
     private Timestamp fecha;
 
     @Column(name = "fecha_orden")
     private Date fechaOrden;
 
+    @NotBlank(message = "El movimiento es requerido")
     @Column(name = "movimiento")
     private String movimiento;
 
@@ -38,24 +43,30 @@ public class Kardex extends AbstractEntity {
     @Column(name = "destino")
     private String destino;
 
+    @DecimalMin(value = "0.0", inclusive = true, message = "El precio costo debe ser mayor o igual a 0")
     @Column(name = "precio_costo")
     private BigDecimal precioCosto;
 
+    @DecimalMin(value = "0.0", inclusive = true, message = "El precio venta debe ser mayor o igual a 0")
     @Column(name = "precio_venta")
     private BigDecimal precioVenta;
 
+    @DecimalMin(value = "0.0", inclusive = true, message = "El stock anterior debe ser mayor o igual a 0")
     @Column(name = "stock_anterior")
     private BigDecimal stockAnterior;
 
+    @DecimalMin(value = "0.0", inclusive = true, message = "El ingreso debe ser mayor o igual a 0")
     @Column(name = "ingreso")
     private BigDecimal ingreso;
 
+    @DecimalMin(value = "0.0", inclusive = true, message = "La salida debe ser mayor o igual a 0")
     @Column(name = "salida")
     private BigDecimal salida;
 
     @Column(name = "stock")
     private BigDecimal stock;
 
+    @NotNull(message = "El producto es requerido")
     @ManyToOne
     @JoinColumn(name = "producto_id", nullable = false)
     private Producto producto;

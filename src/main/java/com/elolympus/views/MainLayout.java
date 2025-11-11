@@ -158,50 +158,6 @@ public class MainLayout extends AppLayout {
             nav.addItem(new SideNavItem("Sobre Nosotros", SobreNosotrosView.class, LineAwesomeIcon.FILE.create()));
 
         }
-        if (accessChecker.hasAccess(GrillaporsifuncionaView.class)) {
-            nav.addItem(new SideNavItem("Grilla por si funciona", GrillaporsifuncionaView.class,
-                    LineAwesomeIcon.TH_SOLID.create()));
-
-        }
-        if (accessChecker.hasAccess(ReportesView.class)) {
-            nav.addItem(new SideNavItem("Reportes", ReportesView.class, LineAwesomeIcon.FILTER_SOLID.create()));
-
-        }
-        if (accessChecker.hasAccess(EditarTablaView.class)) {
-            nav.addItem(new SideNavItem("Editar Tabla", EditarTablaView.class, LineAwesomeIcon.COLUMNS_SOLID.create()));
-
-        }
-        if (accessChecker.hasAccess(FormPersonaView.class)) {
-            nav.addItem(new SideNavItem("Form Persona", FormPersonaView.class, LineAwesomeIcon.USER.create()));
-
-        }
-        if (accessChecker.hasAccess(ColaboracionView.class)) {
-            nav.addItem(
-                    new SideNavItem("Colaboracion", ColaboracionView.class, LineAwesomeIcon.COLUMNS_SOLID.create()));
-
-        }
-        if (accessChecker.hasAccess(Direccion2View.class)) {
-            nav.addItem(new SideNavItem("Direccion", Direccion2View.class, LineAwesomeIcon.MAP_MARKER_SOLID.create()));
-
-        }
-        if (accessChecker.hasAccess(FormCreditCardView.class)) {
-            nav.addItem(new SideNavItem("Form Credit Card", FormCreditCardView.class,
-                    LineAwesomeIcon.CREDIT_CARD.create()));
-
-        }
-        if (accessChecker.hasAccess(ChatEView.class)) {
-            nav.addItem(new SideNavItem("Chat E", ChatEView.class, LineAwesomeIcon.COMMENTS.create()));
-
-        }
-        if (accessChecker.hasAccess(GaleriaImagenesView.class)) {
-            nav.addItem(new SideNavItem("Galeria Imagenes", GaleriaImagenesView.class,
-                    LineAwesomeIcon.TH_LIST_SOLID.create()));
-
-        }
-        //agregar vista ubigeo
-        if (accessChecker.hasAccess(BienvenidaView.class)) {
-            nav.addItem(new SideNavItem("Ubigeo", UbigeoView.class, LineAwesomeIcon.GLOBE_SOLID.create()));
-        }
 
         return nav;
     }

@@ -30,6 +30,7 @@ import jakarta.annotation.security.PermitAll;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 @PageTitle("Kardex")
@@ -75,9 +76,8 @@ public class KardexView extends Div {
         try {
             // Configure Form
             binder = new BeanValidationBinder<>(Kardex.class);
-            setupForm();
-            binder.bindInstanceFields(this);
-
+            // Don't auto-bind fields - we'll bind them manually in setupForm()
+            
         }catch (Exception e){
             System.out.println("ERRORRRR: " + e.getMessage());
         }
@@ -124,7 +124,6 @@ public class KardexView extends Div {
         cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
-        binder.bindInstanceFields(this);
         div.add(formLayout);
         createButtonLayout(editorDiv);
         return editorDiv;
@@ -153,6 +152,12 @@ public class KardexView extends Div {
         producto.setItemLabelGenerator(Producto::getNombre);
         producto.setPlaceholder("Seleccione un producto");
         
+        // Make producto field required
+        producto.setRequiredIndicatorVisible(true);
+        
+        // Add listeners for automatic stock calculation
+        setupStockCalculation();
+        
         binder.forField(fecha)
                 .withConverter(
                         localDateTime -> localDateTime == null ? null : Timestamp.valueOf(localDateTime),
@@ -174,6 +179,36 @@ public class KardexView extends Div {
                         "Fecha inválida"
                 )
                 .bind(Kardex::getFechaVencimiento, Kardex::setFechaVencimiento);
+        
+        // Bind all other fields manually
+        binder.forField(ordenId).bind(Kardex::getOrdenId, Kardex::setOrdenId);
+        binder.forField(movimiento).bind(Kardex::getMovimiento, Kardex::setMovimiento);
+        binder.forField(almacen).bind(Kardex::getAlmacen, Kardex::setAlmacen);
+        binder.forField(origen).bind(Kardex::getOrigen, Kardex::setOrigen);
+        binder.forField(destino).bind(Kardex::getDestino, Kardex::setDestino);
+        binder.forField(precioCosto).bind(Kardex::getPrecioCosto, Kardex::setPrecioCosto);
+        binder.forField(precioVenta).bind(Kardex::getPrecioVenta, Kardex::setPrecioVenta);
+        binder.forField(stockAnterior).bind(Kardex::getStockAnterior, Kardex::setStockAnterior);
+        binder.forField(ingreso).bind(Kardex::getIngreso, Kardex::setIngreso);
+        binder.forField(salida).bind(Kardex::getSalida, Kardex::setSalida);
+        binder.forField(stock).bind(Kardex::getStock, Kardex::setStock);
+        binder.forField(producto).bind(Kardex::getProducto, Kardex::setProducto);
+    }
+
+    private void setupStockCalculation() {
+        // Add value change listeners to automatically calculate stock
+        stockAnterior.addValueChangeListener(e -> calculateStock());
+        ingreso.addValueChangeListener(e -> calculateStock());
+        salida.addValueChangeListener(e -> calculateStock());
+    }
+    
+    private void calculateStock() {
+        BigDecimal stockAnt = stockAnterior.getValue() != null ? stockAnterior.getValue() : BigDecimal.ZERO;
+        BigDecimal ing = ingreso.getValue() != null ? ingreso.getValue() : BigDecimal.ZERO;
+        BigDecimal sal = salida.getValue() != null ? salida.getValue() : BigDecimal.ZERO;
+        
+        BigDecimal newStock = stockAnt.add(ing).subtract(sal);
+        stock.setValue(newStock);
     }
 
     private void save(){
@@ -190,9 +225,6 @@ public class KardexView extends Div {
             }else{
                 Notification.show("Error al guardar los datos. Por favor, revise los campos e intente nuevamente.");
             }
-            clearForm();
-            refreshGrid();
-            UI.getCurrent().navigate(KardexView.class);
         } catch (ObjectOptimisticLockingFailureException exception) {
             Notification n = Notification.show(
                     "Error al actualizar los datos. Alguien más actualizó el registro mientras usted hacía cambios.");
