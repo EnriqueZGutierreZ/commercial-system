@@ -1,8 +1,13 @@
 package com.elolympus.services.services;
 
 import com.elolympus.data.Ventas.Factura;
+import com.elolympus.data.Ventas.FacturaDetalle;
 import com.elolympus.data.Administracion.Persona;
+import com.elolympus.data.Almacen.Almacen;
 import com.elolympus.services.repository.FacturaRepository;
+import com.elolympus.services.repository.FacturaDetalleRepository;
+import com.elolympus.services.services.StockService;
+import com.elolympus.services.services.AlmacenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,10 +24,19 @@ import java.util.Optional;
 public class FacturaService {
 
     private final FacturaRepository facturaRepository;
+    private final FacturaDetalleRepository facturaDetalleRepository;
+    private final StockService stockService;
+    private final AlmacenService almacenService;
 
     @Autowired
-    public FacturaService(FacturaRepository facturaRepository) {
+    public FacturaService(FacturaRepository facturaRepository, 
+                         FacturaDetalleRepository facturaDetalleRepository,
+                         StockService stockService,
+                         AlmacenService almacenService) {
         this.facturaRepository = facturaRepository;
+        this.facturaDetalleRepository = facturaDetalleRepository;
+        this.stockService = stockService;
+        this.almacenService = almacenService;
     }
 
     // CRUD básico
@@ -139,6 +153,12 @@ public class FacturaService {
         Optional<Factura> optionalFactura = findById(facturaId);
         if (optionalFactura.isPresent()) {
             Factura factura = optionalFactura.get();
+            
+            // Reversar movimientos de stock si la factura estaba emitida
+            if ("EMITIDA".equals(factura.getEstado()) || "PAGADA".equals(factura.getEstado())) {
+                reversarMovimientosStock(factura);
+            }
+            
             factura.setEstado("ANULADA");
             factura.setObservaciones(motivo);
             return update(factura);
@@ -265,5 +285,198 @@ public class FacturaService {
                 update(factura);
             }
         }
+    }
+
+    // MÉTODOS PARA GESTIÓN DE DETALLES Y STOCK
+
+    /**
+     * Obtener detalles de una factura
+     */
+    public List<FacturaDetalle> getDetallesFactura(Factura factura) {
+        return facturaDetalleRepository.findByFacturaOrderById(factura);
+    }
+
+    /**
+     * Agregar detalle a una factura (con validación de stock)
+     */
+    public FacturaDetalle agregarDetalle(Factura factura, FacturaDetalle detalle) {
+        // Validar que hay stock disponible
+        if (!stockService.validarStockParaVenta(detalle.getProducto(), detalle.getCantidad(), null)) {
+            throw new RuntimeException("Stock insuficiente para el producto: " + detalle.getProducto().getNombre());
+        }
+
+        detalle.setFactura(factura);
+        detalle.calculateTotals();
+        
+        FacturaDetalle detalleGuardado = facturaDetalleRepository.save(detalle);
+        
+        // Actualizar totales de la factura
+        actualizarTotalesFactura(factura);
+        
+        return detalleGuardado;
+    }
+
+    /**
+     * Guardar factura con validación y procesamiento de stock
+     */
+    public Factura saveConStock(Factura factura) {
+        boolean esNueva = factura.getId() == null;
+        
+        // Generar número de factura automáticamente si no existe
+        if (factura.getNumeroFactura() == null || factura.getNumeroFactura().isEmpty()) {
+            String serie = factura.getSerie() != null ? factura.getSerie() : "F001";
+            factura.setSerie(serie);
+            factura.setNumeroFactura(generateNumeroFactura(serie));
+        }
+        
+        // Establecer fecha de creación si es nueva
+        if (esNueva) {
+            factura.setFechaCreacion(new Timestamp(System.currentTimeMillis()));
+        }
+        
+        // Calcular IGV automáticamente si no está establecido
+        if (factura.getSubtotal() != null && factura.getIgv() == null) {
+            factura.calculateIgvFromSubtotal();
+        }
+        
+        Factura facturaGuardada = facturaRepository.save(factura);
+        
+        // Si es una factura nueva y está en estado EMITIDA, procesar movimientos de stock
+        if (esNueva && "EMITIDA".equals(factura.getEstado())) {
+            procesarMovimientosStock(facturaGuardada);
+        }
+        
+        return facturaGuardada;
+    }
+
+    /**
+     * Procesar factura completa con detalles (método principal para ventas)
+     */
+    public Factura procesarFacturaCompleta(Factura factura, List<FacturaDetalle> detalles) {
+        // Validar stock para todos los productos
+        for (FacturaDetalle detalle : detalles) {
+            if (!stockService.validarStockParaVenta(detalle.getProducto(), detalle.getCantidad(), null)) {
+                throw new RuntimeException("Stock insuficiente para el producto: " + 
+                    detalle.getProducto().getNombre() + ". Stock disponible: " + 
+                    stockService.getStockDisponibleTotalProducto(detalle.getProducto()));
+            }
+        }
+
+        // Calcular totales de la factura
+        BigDecimal subtotal = BigDecimal.ZERO;
+        BigDecimal igv = BigDecimal.ZERO;
+        BigDecimal total = BigDecimal.ZERO;
+
+        for (FacturaDetalle detalle : detalles) {
+            detalle.calculateTotals();
+            subtotal = subtotal.add(detalle.getSubtotal());
+            igv = igv.add(detalle.getIgv());
+            total = total.add(detalle.getTotal());
+        }
+
+        factura.setSubtotal(subtotal);
+        factura.setIgv(igv);
+        factura.setTotal(total);
+
+        // Guardar factura
+        Factura facturaGuardada = saveConStock(factura);
+
+        // Guardar detalles
+        for (FacturaDetalle detalle : detalles) {
+            detalle.setFactura(facturaGuardada);
+            facturaDetalleRepository.save(detalle);
+        }
+
+        // Procesar movimientos de stock si está emitida
+        if ("EMITIDA".equals(facturaGuardada.getEstado())) {
+            procesarMovimientosStockConDetalles(facturaGuardada, detalles);
+        }
+
+        return facturaGuardada;
+    }
+
+    /**
+     * Procesar movimientos de stock para una factura
+     */
+    private void procesarMovimientosStock(Factura factura) {
+        List<FacturaDetalle> detalles = getDetallesFactura(factura);
+        procesarMovimientosStockConDetalles(factura, detalles);
+    }
+
+    /**
+     * Procesar movimientos de stock con lista de detalles
+     */
+    private void procesarMovimientosStockConDetalles(Factura factura, List<FacturaDetalle> detalles) {
+        Almacen almacenPrincipal = stockService.getAlmacenPrincipal();
+        String numeroFactura = factura.getSerie() + "-" + factura.getNumeroFactura();
+
+        for (FacturaDetalle detalle : detalles) {
+            boolean stockDescontado = stockService.procesarSalidaPorVenta(
+                detalle.getProducto(),
+                detalle.getCantidad(),
+                almacenPrincipal,
+                "VENTA_FACTURA",
+                numeroFactura
+            );
+
+            if (!stockDescontado) {
+                throw new RuntimeException("Error al descontar stock para producto: " + 
+                    detalle.getProducto().getNombre());
+            }
+        }
+    }
+
+    /**
+     * Reversar movimientos de stock (para anulaciones)
+     */
+    private void reversarMovimientosStock(Factura factura) {
+        List<FacturaDetalle> detalles = getDetallesFactura(factura);
+        Almacen almacenPrincipal = stockService.getAlmacenPrincipal();
+        String numeroFactura = factura.getSerie() + "-" + factura.getNumeroFactura();
+
+        for (FacturaDetalle detalle : detalles) {
+            stockService.reversarSalidaPorVenta(
+                detalle.getProducto(),
+                detalle.getCantidad(),
+                almacenPrincipal,
+                "VENTA_FACTURA",
+                numeroFactura
+            );
+        }
+    }
+
+    /**
+     * Actualizar totales de factura basado en sus detalles
+     */
+    private void actualizarTotalesFactura(Factura factura) {
+        List<FacturaDetalle> detalles = getDetallesFactura(factura);
+        
+        BigDecimal subtotal = BigDecimal.ZERO;
+        BigDecimal igv = BigDecimal.ZERO;
+        BigDecimal total = BigDecimal.ZERO;
+
+        for (FacturaDetalle detalle : detalles) {
+            subtotal = subtotal.add(detalle.getSubtotal() != null ? detalle.getSubtotal() : BigDecimal.ZERO);
+            igv = igv.add(detalle.getIgv() != null ? detalle.getIgv() : BigDecimal.ZERO);
+            total = total.add(detalle.getTotal() != null ? detalle.getTotal() : BigDecimal.ZERO);
+        }
+
+        factura.setSubtotal(subtotal);
+        factura.setIgv(igv);
+        factura.setTotal(total);
+        
+        facturaRepository.save(factura);
+    }
+
+    /**
+     * Validar disponibilidad de stock antes de confirmar factura
+     */
+    public boolean validarStockParaFactura(List<FacturaDetalle> detalles) {
+        for (FacturaDetalle detalle : detalles) {
+            if (!stockService.validarStockParaVenta(detalle.getProducto(), detalle.getCantidad(), null)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

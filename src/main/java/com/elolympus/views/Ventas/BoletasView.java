@@ -1,14 +1,18 @@
 package com.elolympus.views.Ventas;
 
 import com.elolympus.data.Ventas.Boleta;
+import com.elolympus.data.Ventas.BoletaDetalle;
 import com.elolympus.data.Administracion.Persona;
 import com.elolympus.data.Empresa.Empresa;
+import com.elolympus.data.Logistica.Producto;
 import com.elolympus.services.services.BoletaService;
+import com.elolympus.services.services.BoletaDetalleService;
 import com.elolympus.services.services.PersonaService;
 import com.elolympus.services.services.EmpresaService;
+import com.elolympus.services.services.ProductoService;
+import com.elolympus.services.services.StockService;
 import com.elolympus.views.MainLayout;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -35,6 +39,7 @@ import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 import java.math.BigDecimal;
 import java.sql.Date;
+import java.util.List;
 
 @PageTitle("Boletas")
 @Route(value = "boletas", layout = MainLayout.class)
@@ -42,48 +47,76 @@ import java.sql.Date;
 public class BoletasView extends Div {
 
     private final BoletaService boletaService;
+    private final BoletaDetalleService boletaDetalleService;
     private final PersonaService personaService;
     private final EmpresaService empresaService;
+    private final ProductoService productoService;
+    private final StockService stockService;
     private Boleta boleta;
     private BeanValidationBinder<Boleta> binder;
+    private BeanValidationBinder<BoletaDetalle> binderDetalle;
 
     // Componentes UI
     private Grid<Boleta> gridBoletas = new Grid<>(Boleta.class, false);
+    private Grid<BoletaDetalle> gridDetalles = new Grid<>(BoletaDetalle.class, false);
+    private final TextField serie = new TextField("Serie");
     private final TextField numeroBoleta = new TextField("Número Boleta");
     private final DatePicker fechaEmision = new DatePicker("Fecha Emisión");
-    private final DatePicker fechaVencimiento = new DatePicker("Fecha Vencimiento");
     private final ComboBox<Persona> cliente = new ComboBox<>("Cliente");
     private final ComboBox<Empresa> empresa = new ComboBox<>("Empresa");
     private final BigDecimalField subtotal = new BigDecimalField("Subtotal");
+    private final BigDecimalField descuento = new BigDecimalField("Descuento");
     private final BigDecimalField igv = new BigDecimalField("IGV (18%)");
     private final BigDecimalField total = new BigDecimalField("Total");
     private final ComboBox<String> estado = new ComboBox<>("Estado");
     private final ComboBox<String> formaPago = new ComboBox<>("Forma de Pago");
+    private final ComboBox<String> tipoDocumento = new ComboBox<>("Tipo Documento");
+    private final ComboBox<String> moneda = new ComboBox<>("Moneda");
     private final DatePicker fechaPago = new DatePicker("Fecha Pago");
     private final TextArea observaciones = new TextArea("Observaciones");
+
+    // Campos para detalles de boleta
+    private final ComboBox<Producto> productoDetalle = new ComboBox<>("Producto");
+    private final BigDecimalField cantidadDetalle = new BigDecimalField("Cantidad");
+    private final BigDecimalField precioUnitarioDetalle = new BigDecimalField("Precio Unitario");
+    private final BigDecimalField descuentoDetalle = new BigDecimalField("Descuento");
+    private final TextArea descripcionDetalle = new TextArea("Descripción");
 
     private final Button save = new Button("Guardar");
     private final Button cancel = new Button("Cancelar");
     private final Button delete = new Button("Anular");
     private final Button marcarPagada = new Button("Marcar como Pagada");
+    
+    // Botones para detalles
+    private final Button agregarDetalle = new Button("Agregar Producto");
+    private final Button editarDetalle = new Button("Editar");
+    private final Button eliminarDetalle = new Button("Eliminar");
+    private final Button cancelarDetalle = new Button("Cancelar");
 
     private final FormLayout formLayout = new FormLayout();
+    private final FormLayout detalleFormLayout = new FormLayout();
 
     // Filtros
     private final TextField filtroNumero = new TextField("Filtrar por número");
+    private final TextField filtroSerie = new TextField("Filtrar por serie");
     private final TextField filtroCliente = new TextField("Filtrar por cliente");
     private final ComboBox<String> filtroEstado = new ComboBox<>("Filtrar por estado");
 
     @Autowired
-    public BoletasView(BoletaService boletaService, PersonaService personaService, EmpresaService empresaService) {
+    public BoletasView(BoletaService boletaService, BoletaDetalleService boletaDetalleService,
+                       PersonaService personaService, EmpresaService empresaService, 
+                       ProductoService productoService, StockService stockService) {
         this.boletaService = boletaService;
+        this.boletaDetalleService = boletaDetalleService;
         this.personaService = personaService;
         this.empresaService = empresaService;
+        this.productoService = productoService;
+        this.stockService = stockService;
         
         try {
-            // Configure Form
+            // Configure Forms
             binder = new BeanValidationBinder<>(Boleta.class);
-            // Don't auto-bind fields - we'll bind them manually in setupForm()
+            binderDetalle = new BeanValidationBinder<>(BoletaDetalle.class);
             
         } catch (Exception e) {
             System.out.println("ERROR en BoletasView: " + e.getMessage());
@@ -177,48 +210,124 @@ public class BoletasView extends Div {
     }
 
     private Component createEditorLayout() {
-        Div editorDiv = new Div();
-        editorDiv.setHeightFull();
-        editorDiv.setWidth("40%");
-        editorDiv.setClassName("editor-layout");
+        VerticalLayout editorLayout = new VerticalLayout();
+        editorLayout.setHeightFull();
+        editorLayout.setWidth("50%");
+        editorLayout.setClassName("editor-layout");
+        editorLayout.setPadding(false);
+        editorLayout.setSpacing(true);
         
-        Div div = new Div();
-        div.setClassName("editor");
-        editorDiv.add(div);
+        // Sección de cabecera de boleta
+        Div boletaSection = new Div();
+        boletaSection.setClassName("boleta-section");
+        boletaSection.getStyle().set("background", "white")
+                                 .set("border", "1px solid #e0e0e0")
+                                 .set("border-radius", "8px")
+                                 .set("padding", "16px")
+                                 .set("margin-bottom", "16px");
+        
+        H3 boletaTitle = new H3("📄 Información de Boleta");
+        boletaTitle.getStyle().set("margin-top", "0");
         
         formLayout.add(
-            numeroBoleta, fechaEmision, fechaVencimiento, 
-            cliente, empresa, subtotal, igv, total, 
-            estado, formaPago, fechaPago, observaciones
+            numeroBoleta, fechaEmision, cliente, empresa, 
+            subtotal, igv, total, estado, formaPago, 
+            fechaPago, observaciones
         );
         
+        HorizontalLayout boletaButtons = createBoletaButtonLayout();
+        boletaSection.add(boletaTitle, formLayout, boletaButtons);
+        
+        // Sección de detalles de productos
+        Div detallesSection = createDetallesSection();
+        
+        editorLayout.add(boletaSection, detallesSection);
+        
         // Configurar listeners de botones
-        save.addClickListener(event -> save());
-        cancel.addClickListener(event -> clearForm());
-        delete.addClickListener(event -> anularBoleta());
-        marcarPagada.addClickListener(event -> marcarComoPagada());
-
-        // Estilos de botones
-        delete.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
-        marcarPagada.addThemeVariants(ButtonVariant.LUMO_SUCCESS);
-        cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
-        save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-
-        div.add(formLayout);
-        createButtonLayout(editorDiv);
-        return editorDiv;
+        setupButtonListeners();
+        setupButtonStyles();
+        
+        return editorLayout;
     }
 
-    private void createButtonLayout(Div div) {
-        HorizontalLayout buttonLayout1 = new HorizontalLayout();
-        buttonLayout1.setClassName("button-layout");
-        buttonLayout1.add(save, cancel);
+    private Div createDetallesSection() {
+        Div detallesSection = new Div();
+        detallesSection.setClassName("detalles-section");
+        detallesSection.getStyle().set("background", "white")
+                                  .set("border", "1px solid #e0e0e0")
+                                  .set("border-radius", "8px")
+                                  .set("padding", "16px");
         
-        HorizontalLayout buttonLayout2 = new HorizontalLayout();
-        buttonLayout2.setClassName("button-layout");
-        buttonLayout2.add(marcarPagada, delete);
+        H3 detallesTitle = new H3("🛒 Productos de la Boleta");
+        detallesTitle.getStyle().set("margin-top", "0");
         
-        div.add(buttonLayout1, buttonLayout2);
+        // Setup grid de detalles
+        setupGridDetalles();
+        
+        // Setup formulario de detalles
+        setupDetalleForm();
+        
+        HorizontalLayout detalleButtons = createDetalleButtonLayout();
+        
+        detallesSection.add(detallesTitle, gridDetalles, detalleFormLayout, detalleButtons);
+        
+        return detallesSection;
+    }
+
+    private HorizontalLayout createBoletaButtonLayout() {
+        HorizontalLayout buttonLayout = new HorizontalLayout();
+        buttonLayout.setClassName("button-layout");
+        buttonLayout.setSpacing(true);
+        buttonLayout.add(save, cancel, marcarPagada, delete);
+        return buttonLayout;
+    }
+
+    private HorizontalLayout createDetalleButtonLayout() {
+        HorizontalLayout buttonLayout = new HorizontalLayout();
+        buttonLayout.setClassName("detalle-button-layout");
+        buttonLayout.setSpacing(true);
+        buttonLayout.add(agregarDetalle, editarDetalle, eliminarDetalle, cancelarDetalle);
+        return buttonLayout;
+    }
+
+    private void setupGridDetalles() {
+        gridDetalles.addColumn(detalle -> detalle.getProducto() != null ? detalle.getProducto().getCodigo() : "").setHeader("Código").setAutoWidth(true);
+        gridDetalles.addColumn(detalle -> detalle.getProducto() != null ? detalle.getProducto().getNombre() : "").setHeader("Producto").setAutoWidth(true);
+        gridDetalles.addColumn(BoletaDetalle::getCantidad).setHeader("Cantidad").setAutoWidth(true);
+        gridDetalles.addColumn(BoletaDetalle::getPrecioUnitario).setHeader("P. Unitario").setAutoWidth(true);
+        gridDetalles.addColumn(BoletaDetalle::getDescuento).setHeader("Descuento").setAutoWidth(true);
+        gridDetalles.addColumn(BoletaDetalle::getSubtotal).setHeader("Subtotal").setAutoWidth(true);
+        gridDetalles.addColumn(BoletaDetalle::getTotal).setHeader("Total").setAutoWidth(true);
+        
+        gridDetalles.setHeight("200px");
+        gridDetalles.asSingleSelect().addValueChangeListener(event -> editDetalle(event.getValue()));
+    }
+
+    private void setupDetalleForm() {
+        // Configurar producto combo
+        productoDetalle.setItems(productoService.findAll());
+        productoDetalle.setItemLabelGenerator(producto -> producto.getCodigo() + " - " + producto.getNombre());
+        productoDetalle.setPlaceholder("Seleccione un producto");
+        productoDetalle.addValueChangeListener(e -> {
+            if (e.getValue() != null) {
+                mostrarStockDisponible(e.getValue());
+                precioUnitarioDetalle.setValue(e.getValue().getPrecioVenta());
+            }
+        });
+        
+        cantidadDetalle.setValue(BigDecimal.ONE);
+        descuentoDetalle.setValue(BigDecimal.ZERO);
+        
+        // Auto-cálculo al cambiar valores
+        cantidadDetalle.addValueChangeListener(e -> calcularTotalDetalle());
+        precioUnitarioDetalle.addValueChangeListener(e -> calcularTotalDetalle());
+        descuentoDetalle.addValueChangeListener(e -> calcularTotalDetalle());
+        
+        detalleFormLayout.add(productoDetalle, cantidadDetalle, precioUnitarioDetalle, descuentoDetalle, descripcionDetalle);
+        detalleFormLayout.setColspan(descripcionDetalle, 2);
+        
+        // Binding manual para detalles
+        bindDetalleFields();
     }
 
     private void setupForm() {
@@ -236,7 +345,10 @@ public class BoletasView extends Div {
         estado.setItems("PENDIENTE", "PAGADA", "ANULADA");
         estado.setValue("PENDIENTE");
         
-        formaPago.setItems("EFECTIVO", "TARJETA", "TRANSFERENCIA", "CHEQUE");
+        formaPago.setItems("EFECTIVO", "TARJETA", "TRANSFERENCIA");
+        
+        numeroBoleta.setRequiredIndicatorVisible(true);
+        numeroBoleta.setPlaceholder("Se genera automáticamente si se deja vacío");
         
         // Campos de solo lectura
         total.setReadOnly(true);
@@ -250,16 +362,18 @@ public class BoletasView extends Div {
     }
 
     private void setupAutoCalculation() {
-        subtotal.addValueChangeListener(e -> {
-            if (subtotal.getValue() != null) {
-                BigDecimal subtotalValue = subtotal.getValue();
-                BigDecimal igvValue = subtotalValue.multiply(new BigDecimal("0.18"));
-                BigDecimal totalValue = subtotalValue.add(igvValue);
-                
-                igv.setValue(igvValue);
-                total.setValue(totalValue);
-            }
-        });
+        subtotal.addValueChangeListener(e -> calculateTotals());
+    }
+    
+    private void calculateTotals() {
+        if (subtotal.getValue() != null) {
+            BigDecimal subtotalValue = subtotal.getValue();
+            BigDecimal igvValue = subtotalValue.multiply(new BigDecimal("0.18"));
+            BigDecimal totalValue = subtotalValue.add(igvValue);
+            
+            igv.setValue(igvValue);
+            total.setValue(totalValue);
+        }
     }
 
     private void bindFields() {
@@ -270,14 +384,6 @@ public class BoletasView extends Div {
                         "Fecha inválida"
                 )
                 .bind(Boleta::getFechaEmision, Boleta::setFechaEmision);
-                
-        binder.forField(fechaVencimiento)
-                .withConverter(
-                        localDate -> localDate == null ? null : Date.valueOf(localDate),
-                        date -> date == null ? null : date.toLocalDate(),
-                        "Fecha inválida"
-                )
-                .bind(Boleta::getFechaVencimiento, Boleta::setFechaVencimiento);
                 
         binder.forField(fechaPago)
                 .withConverter(
@@ -297,6 +403,30 @@ public class BoletasView extends Div {
         binder.forField(estado).bind(Boleta::getEstado, Boleta::setEstado);
         binder.forField(formaPago).bind(Boleta::getFormaPago, Boleta::setFormaPago);
         binder.forField(observaciones).bind(Boleta::getObservaciones, Boleta::setObservaciones);
+    }
+
+    private void setupButtonListeners() {
+        save.addClickListener(event -> save());
+        cancel.addClickListener(event -> clearForm());
+        delete.addClickListener(event -> anularBoleta());
+        marcarPagada.addClickListener(event -> marcarComoPagada());
+        
+        agregarDetalle.addClickListener(event -> agregarDetalleABoleta());
+        editarDetalle.addClickListener(event -> editarDetalleSeleccionado());
+        eliminarDetalle.addClickListener(event -> eliminarDetalleSeleccionado());
+        cancelarDetalle.addClickListener(event -> clearDetalleForm());
+    }
+
+    private void setupButtonStyles() {
+        delete.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
+        marcarPagada.addThemeVariants(ButtonVariant.LUMO_SUCCESS);
+        cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+        save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        
+        agregarDetalle.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        editarDetalle.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+        eliminarDetalle.addThemeVariants(ButtonVariant.LUMO_ERROR);
+        cancelarDetalle.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
     }
 
     private void refreshGrid() {
@@ -368,7 +498,10 @@ public class BoletasView extends Div {
         this.boleta = new Boleta();
         binder.readBean(this.boleta);
         estado.setValue("PENDIENTE");
+        numeroBoleta.clear();
         save.setText("Guardar");
+        clearDetalleForm();
+        refreshDetallesGrid();
     }
 
     private void editBoleta(Boleta boleta) {
@@ -378,6 +511,180 @@ public class BoletasView extends Div {
             this.boleta = boleta;
             binder.readBean(this.boleta);
             save.setText("Actualizar");
+            refreshDetallesGrid();
         }
     }
+
+    // MÉTODOS PARA MANEJO DE DETALLES
+
+    private void bindDetalleFields() {
+        binderDetalle.forField(productoDetalle).bind(BoletaDetalle::getProducto, BoletaDetalle::setProducto);
+        binderDetalle.forField(cantidadDetalle).bind(BoletaDetalle::getCantidad, BoletaDetalle::setCantidad);
+        binderDetalle.forField(precioUnitarioDetalle).bind(BoletaDetalle::getPrecioUnitario, BoletaDetalle::setPrecioUnitario);
+        binderDetalle.forField(descuentoDetalle).bind(BoletaDetalle::getDescuento, BoletaDetalle::setDescuento);
+        binderDetalle.forField(descripcionDetalle).bind(BoletaDetalle::getDescripcion, BoletaDetalle::setDescripcion);
+    }
+
+    private void mostrarStockDisponible(Producto producto) {
+        try {
+            BigDecimal stockDisponible = stockService.getStockDisponibleTotalProducto(producto);
+            productoDetalle.setHelperText("Stock disponible: " + stockDisponible);
+            
+            if (stockDisponible.compareTo(BigDecimal.ZERO) <= 0) {
+                productoDetalle.setInvalid(true);
+                productoDetalle.setErrorMessage("⚠️ Sin stock disponible");
+            } else {
+                productoDetalle.setInvalid(false);
+                productoDetalle.setErrorMessage("");
+            }
+        } catch (Exception e) {
+            System.err.println("Error obteniendo stock: " + e.getMessage());
+        }
+    }
+
+    private void calcularTotalDetalle() {
+        if (cantidadDetalle.getValue() != null && precioUnitarioDetalle.getValue() != null) {
+            BigDecimal cantidad = cantidadDetalle.getValue();
+            BigDecimal precioUnitario = precioUnitarioDetalle.getValue();
+            BigDecimal descuento = descuentoDetalle.getValue() != null ? descuentoDetalle.getValue() : BigDecimal.ZERO;
+            
+            BigDecimal subtotal = cantidad.multiply(precioUnitario).subtract(descuento);
+            BigDecimal igv = subtotal.multiply(new BigDecimal("0.18"));
+            BigDecimal total = subtotal.add(igv);
+            
+            // Mostrar cálculo en tiempo real en helper text
+            cantidadDetalle.setHelperText("Subtotal: S/. " + subtotal + " | IGV: S/. " + igv + " | Total: S/. " + total);
+        }
+    }
+
+    private void agregarDetalleABoleta() {
+        if (boleta == null || boleta.getId() == null) {
+            Notification.show("Primero debe guardar la boleta antes de agregar productos");
+            return;
+        }
+
+        try {
+            // Validar que todos los campos estén llenos
+            if (productoDetalle.getValue() == null) {
+                Notification.show("Seleccione un producto");
+                return;
+            }
+            
+            if (cantidadDetalle.getValue() == null || cantidadDetalle.getValue().compareTo(BigDecimal.ZERO) <= 0) {
+                Notification.show("Ingrese una cantidad válida");
+                return;
+            }
+
+            // Validar stock disponible
+            BigDecimal stockDisponible = stockService.getStockDisponibleTotalProducto(productoDetalle.getValue());
+            if (stockDisponible.compareTo(cantidadDetalle.getValue()) < 0) {
+                Notification.show("Stock insuficiente. Disponible: " + stockDisponible);
+                return;
+            }
+
+            // Crear nuevo detalle
+            BoletaDetalle detalle = new BoletaDetalle();
+            if (binderDetalle.writeBeanIfValid(detalle)) {
+                detalle.setBoleta(boleta);
+                detalle.calculateTotals();
+                
+                boletaDetalleService.save(detalle);
+                
+                // Actualizar totales de la boleta
+                actualizarTotalesBoleta();
+                refreshDetallesGrid();
+                clearDetalleForm();
+                
+                Notification.show("Producto agregado correctamente");
+            } else {
+                Notification.show("Complete todos los campos requeridos");
+            }
+        } catch (Exception e) {
+            Notification.show("Error al agregar producto: " + e.getMessage());
+        }
+    }
+
+    private void editarDetalleSeleccionado() {
+        BoletaDetalle detalleSeleccionado = gridDetalles.asSingleSelect().getValue();
+        if (detalleSeleccionado != null) {
+            editDetalle(detalleSeleccionado);
+        } else {
+            Notification.show("Seleccione un producto para editar");
+        }
+    }
+
+    private void editDetalle(BoletaDetalle detalle) {
+        if (detalle != null) {
+            binderDetalle.readBean(detalle);
+            agregarDetalle.setText("Actualizar");
+            mostrarStockDisponible(detalle.getProducto());
+        }
+    }
+
+    private void eliminarDetalleSeleccionado() {
+        BoletaDetalle detalleSeleccionado = gridDetalles.asSingleSelect().getValue();
+        if (detalleSeleccionado != null) {
+            try {
+                boletaDetalleService.deleteById(detalleSeleccionado.getId());
+                actualizarTotalesBoleta();
+                refreshDetallesGrid();
+                clearDetalleForm();
+                Notification.show("Producto eliminado correctamente");
+            } catch (Exception e) {
+                Notification.show("Error al eliminar producto: " + e.getMessage());
+            }
+        } else {
+            Notification.show("Seleccione un producto para eliminar");
+        }
+    }
+
+    private void clearDetalleForm() {
+        binderDetalle.readBean(new BoletaDetalle());
+        agregarDetalle.setText("Agregar Producto");
+        productoDetalle.setHelperText("");
+        cantidadDetalle.setHelperText("");
+        cantidadDetalle.setValue(BigDecimal.ONE);
+        descuentoDetalle.setValue(BigDecimal.ZERO);
+        gridDetalles.asSingleSelect().clear();
+    }
+
+    private void refreshDetallesGrid() {
+        if (boleta != null && boleta.getId() != null) {
+            List<BoletaDetalle> detalles = boletaDetalleService.findByBoleta(boleta);
+            gridDetalles.setItems(detalles);
+        } else {
+            gridDetalles.setItems();
+        }
+    }
+
+    private void actualizarTotalesBoleta() {
+        if (boleta != null && boleta.getId() != null) {
+            List<BoletaDetalle> detalles = boletaDetalleService.findByBoleta(boleta);
+            
+            BigDecimal subtotal = detalles.stream()
+                .map(d -> d.getSubtotal() != null ? d.getSubtotal() : BigDecimal.ZERO)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+            
+            BigDecimal igvTotal = detalles.stream()
+                .map(d -> d.getIgv() != null ? d.getIgv() : BigDecimal.ZERO)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+            
+            BigDecimal totalGeneral = detalles.stream()
+                .map(d -> d.getTotal() != null ? d.getTotal() : BigDecimal.ZERO)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+            
+            boleta.setSubtotal(subtotal);
+            boleta.setIgv(igvTotal);
+            boleta.setTotal(totalGeneral);
+            
+            // Actualizar campos en la vista
+            this.subtotal.setValue(subtotal);
+            this.igv.setValue(igvTotal);
+            this.total.setValue(totalGeneral);
+            
+            // Guardar cambios
+            boletaService.save(boleta);
+        }
+    }
+
 }

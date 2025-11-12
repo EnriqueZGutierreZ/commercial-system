@@ -1,5 +1,6 @@
 package com.elolympus.services.services;
 
+import com.elolympus.data.Administracion.Direccion;
 import com.elolympus.data.Administracion.Persona;
 import com.elolympus.services.repository.PersonaRepository;
 
@@ -33,8 +34,49 @@ public class PersonaService {
     public List<Persona> findAll() {
         return repository.findAll();
     }
+    @Transactional
     public Persona update(Persona entity) {
         return repository.save(entity);
+    }
+
+    @Transactional
+    public Persona savePersonaWithDireccion(Persona persona, Direccion direccion, DireccionService direccionService) {
+        // Guardar la dirección primero si es nueva o actualizar si existe
+        Direccion direccionGuardada;
+        
+        if (direccion.getId() != null) {
+            // Si la dirección existe, recargarla desde BD
+            Optional<Direccion> direccionExistente = direccionService.findById(direccion.getId());
+            if (direccionExistente.isPresent()) {
+                direccionGuardada = direccionExistente.get();
+                // Actualizar los campos
+                direccionGuardada.setDescripcion(direccion.getDescripcion());
+                direccionGuardada.setReferencia(direccion.getReferencia());
+                direccionGuardada.setUbigeo(direccion.getUbigeo());
+                // Guardar los cambios
+                direccionGuardada = direccionService.save(direccionGuardada);
+            } else {
+                // Si no se encuentra, crear nueva
+                direccionGuardada = new Direccion();
+                direccionGuardada.setDescripcion(direccion.getDescripcion());
+                direccionGuardada.setReferencia(direccion.getReferencia());
+                direccionGuardada.setUbigeo(direccion.getUbigeo());
+                direccionGuardada = direccionService.save(direccionGuardada);
+            }
+        } else {
+            // Crear nueva dirección
+            direccionGuardada = new Direccion();
+            direccionGuardada.setDescripcion(direccion.getDescripcion());
+            direccionGuardada.setReferencia(direccion.getReferencia());
+            direccionGuardada.setUbigeo(direccion.getUbigeo());
+            direccionGuardada = direccionService.save(direccionGuardada);
+        }
+        
+        // Asignar la dirección gestionada a la persona
+        persona.setDireccion(direccionGuardada);
+        
+        // Guardar la persona
+        return repository.save(persona);
     }
 
     @Transactional(readOnly = true)

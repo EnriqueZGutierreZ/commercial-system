@@ -32,10 +32,12 @@ public class DireccionService {
         );
     }
 
+    @Transactional
     public Direccion save(Direccion direccion) {
         return repository.save(direccion);
     }
 
+    @Transactional
     public Direccion update(Direccion direccion) {
         return repository.save(direccion);
     }

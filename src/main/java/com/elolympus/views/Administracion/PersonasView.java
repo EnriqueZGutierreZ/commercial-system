@@ -213,21 +213,47 @@ public class PersonasView extends Div implements BeforeEnterObserver{
 
     public void onBtnSave() {
         try {
+            // Prevenir múltiples clicks deshabilitando el botón
+            save.setEnabled(false);
+            
+            Persona personaToSave;
+            
             if (this.persona == null) {
-                this.persona = new Persona();
+                // Persona nueva
+                personaToSave = new Persona();
+            } else if (this.persona.getId() != null) {
+                // Persona existente - recargar desde la base de datos para evitar entidades detached
+                Optional<Persona> personaFromDb = PersonaService.get(this.persona.getId());
+                if (personaFromDb.isPresent()) {
+                    personaToSave = personaFromDb.get();
+                } else {
+                    // Si no se encuentra en la DB, crear nueva
+                    personaToSave = new Persona();
+                }
+            } else {
+                // Persona sin ID - es nueva
+                personaToSave = new Persona();
             }
-            binder.writeBean(this.persona);
             
-            // Asociar la dirección a la persona si existe
+            // Escribir los datos del formulario a la entidad
+            binder.writeBean(personaToSave);
+            
+            // Usar el método especializado para guardar persona con dirección
             if (this.direccion != null) {
-                this.persona.setDireccion(this.direccion);
+                try {
+                    this.persona = PersonaService.savePersonaWithDireccion(personaToSave, this.direccion, direccionService);
+                } catch (Exception e) {
+                    throw new RuntimeException("Error al guardar persona con dirección: " + e.getMessage(), e);
+                }
+            } else {
+                // Guardar persona sin dirección
+                this.persona = PersonaService.update(personaToSave);
             }
-            
-            PersonaService.update(this.persona);
             clearForm();
             refreshGrid();
             Notification.show("Datos actualizados");
             UI.getCurrent().navigate(PersonasView.class);
+            
         } catch (ObjectOptimisticLockingFailureException exception) {
             Notification n = Notification.show(
                     "Error al actualizar los datos. Alguien más actualizó el registro mientras usted hacía cambios.");
@@ -235,6 +261,11 @@ public class PersonasView extends Div implements BeforeEnterObserver{
             n.addThemeVariants(NotificationVariant.LUMO_ERROR);
         } catch (ValidationException validationException) {
             Notification.show("No se pudieron actualizar los datos. Compruebe nuevamente que todos los valores sean válidos.");
+        } catch (Exception e) {
+            Notification.show("Error inesperado: " + e.getMessage(), 5000, Notification.Position.MIDDLE);
+        } finally {
+            // Rehabilitar el botón siempre
+            save.setEnabled(true);
         }
     }
 
@@ -245,23 +276,38 @@ public class PersonasView extends Div implements BeforeEnterObserver{
 
     public void onBtnDelete() {
         try {
-            if (this.persona == null) {
-                this.persona = new Persona();
-            }else{this.persona.setActivo(false);}
-
-            binder.writeBean(this.persona);
-            PersonaService.update(this.persona);
-            clearForm();
-            refreshGrid();
-            Notification.show("Persona Eliminada");
-            UI.getCurrent().navigate(PersonasView.class);
+            // Prevenir múltiples clicks
+            delete.setEnabled(false);
+            
+            if (this.persona == null || this.persona.getId() == null) {
+                Notification.show("Seleccione una persona para eliminar");
+                return;
+            }
+            
+            // Recargar la persona desde la base de datos para evitar entidades detached
+            Optional<Persona> personaFromDb = PersonaService.get(this.persona.getId());
+            if (personaFromDb.isPresent()) {
+                Persona personaToDelete = personaFromDb.get();
+                personaToDelete.setActivo(false);
+                PersonaService.update(personaToDelete);
+                clearForm();
+                refreshGrid();
+                Notification.show("Persona Eliminada");
+                UI.getCurrent().navigate(PersonasView.class);
+            } else {
+                Notification.show("La persona ya no existe en la base de datos");
+            }
+            
         } catch (ObjectOptimisticLockingFailureException exception) {
             Notification n = Notification.show(
                     "Error al Eliminar. Alguien más actualizó el registro mientras usted hacía cambios.");
             n.setPosition(Notification.Position.MIDDLE);
             n.addThemeVariants(NotificationVariant.LUMO_ERROR);
-        } catch (ValidationException validationException) {
-            Notification.show("No se pudo Eliminar a la persona. Compruebe nuevamente.");
+        } catch (Exception e) {
+            Notification.show("Error inesperado al eliminar: " + e.getMessage(), 5000, Notification.Position.MIDDLE);
+        } finally {
+            // Rehabilitar el botón
+            delete.setEnabled(true);
         }
     }
 
@@ -329,20 +375,44 @@ public class PersonasView extends Div implements BeforeEnterObserver{
         direccionView.addDireccionGuardadaListener(event -> {
             Direccion direccionGuardada = event.getDireccion();
             if (direccionGuardada != null) {
-                this.direccion = direccionGuardada;
-                txtdireccion.setValue(direccionGuardada.getDescripcion() + " - " + direccionGuardada.getReferencia());
-                
-                // Asociar inmediatamente la dirección a la persona si existe
-                if (this.persona != null) {
-                    this.persona.setDireccion(this.direccion);
-                    
-                    // Guardar la persona con la nueva dirección
-                    try {
-                        PersonaService.update(this.persona);
-                        Notification.show("Dirección asociada correctamente", 3000, Notification.Position.MIDDLE);
-                    } catch (Exception ex) {
-                        Notification.show("Error al asociar dirección: " + ex.getMessage(), 5000, Notification.Position.MIDDLE);
+                try {
+                    // SIEMPRE recargar la dirección desde BD para garantizar que esté gestionada
+                    if (direccionGuardada.getId() != null) {
+                        Optional<Direccion> direccionFromDb = direccionService.findById(direccionGuardada.getId());
+                        if (direccionFromDb.isPresent()) {
+                            // Usar la versión gestionada desde BD
+                            this.direccion = direccionFromDb.get();
+                        } else {
+                            // Si no se encuentra, crear una copia local para guardar después
+                            this.direccion = new Direccion();
+                            this.direccion.setDescripcion(direccionGuardada.getDescripcion());
+                            this.direccion.setReferencia(direccionGuardada.getReferencia());
+                            this.direccion.setUbigeo(direccionGuardada.getUbigeo());
+                        }
+                    } else {
+                        // Dirección nueva sin ID - crear copia local
+                        this.direccion = new Direccion();
+                        this.direccion.setDescripcion(direccionGuardada.getDescripcion());
+                        this.direccion.setReferencia(direccionGuardada.getReferencia());
+                        this.direccion.setUbigeo(direccionGuardada.getUbigeo());
                     }
+                    
+                    String descripcionTexto = "";
+                    if (direccionGuardada.getDescripcion() != null && direccionGuardada.getReferencia() != null) {
+                        descripcionTexto = direccionGuardada.getDescripcion() + " - " + direccionGuardada.getReferencia();
+                    } else if (direccionGuardada.getDescripcion() != null) {
+                        descripcionTexto = direccionGuardada.getDescripcion();
+                    } else if (direccionGuardada.getReferencia() != null) {
+                        descripcionTexto = direccionGuardada.getReferencia();
+                    }
+                    txtdireccion.setValue(descripcionTexto);
+                    
+                    // NO asociar inmediatamente - esperar a que el usuario haga click en Guardar
+                    Notification.show("Dirección cargada. Haga click en Guardar para asociarla a la persona", 3000, Notification.Position.MIDDLE);
+                    
+                } catch (Exception e) {
+                    Notification.show("Error al cargar la dirección: " + e.getMessage(), 5000, Notification.Position.MIDDLE);
+                    this.direccion = null;
                 }
             }
         });

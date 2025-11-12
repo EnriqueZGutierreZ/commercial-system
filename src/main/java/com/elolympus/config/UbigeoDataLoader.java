@@ -18,6 +18,7 @@ public class UbigeoDataLoader {
         try {
             System.out.println("Cargando datos de ubigeo desde JSON...");
             ubigeoService.cargarUbigeosDesdeJson();
+            ubigeoService.cargarDepartamentosProvinciosDistritos();
             System.out.println("Datos de ubigeo cargados exitosamente");
         } catch (IOException e) {
             System.err.println("Error al cargar datos de ubigeo: " + e.getMessage());
