@@ -91,10 +91,10 @@ public class UbigeoService {
 
     public void cargarDepartamentosProvinciosDistritos() {
         try {
-            System.out.println("Cargando departamentos, provincias y distritos desde datos ubigeo...");
+            // Cargando departamentos, provincias y distritos desde datos ubigeo...
             
             // Limpiar tablas existentes para recargar con datos correctos
-            System.out.println("Limpiando datos existentes...");
+            // Limpiando datos existentes...
             distritoRepository.deleteAll();
             provinciaRepository.deleteAll();
             departamentoRepository.deleteAll();
@@ -142,7 +142,7 @@ public class UbigeoService {
                             departamento.setId(depCodigo);
                             departamento.setNombre(departamentosMap.get(depCodigo));
                             departamentoRepository.save(departamento);
-                            System.out.println("Creado departamento: " + depCodigo + " - " + departamentosMap.get(depCodigo));
+                            // Creado departamento: " + depCodigo + " - " + departamentosMap.get(depCodigo)
                         }
                         departamentosCreados.add(depCodigo);
                     }
@@ -190,7 +190,7 @@ public class UbigeoService {
                             provincia.setNombre(nombreProvincia);
                             provincia.setDepartamentoId(depCodigo);
                             provinciaRepository.save(provincia);
-                            System.out.println("Creada provincia: " + provCodigo + " - " + provincia.getNombre());
+                            // Creada provincia: " + provCodigo + " - " + provincia.getNombre()
                         }
                         provinciasCreadas.add(provCodigo);
                     }
@@ -219,12 +219,12 @@ public class UbigeoService {
                         distrito.setProvinciaId(provCodigo);
                         distrito.setDepartamentoId(depCodigo);
                         distritoRepository.save(distrito);
-                        System.out.println("Creado distrito: " + distCodigo + " - " + distrito.getNombre());
+                        // Creado distrito: " + distCodigo + " - " + distrito.getNombre()
                     }
                 }
             }
             
-            System.out.println("Departamentos, provincias y distritos cargados exitosamente");
+            // Departamentos, provincias y distritos cargados exitosamente
             
         } catch (Exception e) {
             System.err.println("Error al cargar departamentos, provincias y distritos: " + e.getMessage());
