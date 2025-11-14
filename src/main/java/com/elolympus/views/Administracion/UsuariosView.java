@@ -110,7 +110,22 @@ public class UsuariosView extends AbstractCrudView<Usuario> {
 
     @Override
     protected void configureBinder() {
-        binder.bindInstanceFields(this);
+        // Configurar binding explícito para cada campo
+        binder.forField(usuarioField)
+                .withValidator(new StringLengthValidator(
+                        "El nombre de usuario debe contener al menos 3 caracteres", 3, null))
+                .bind(Usuario::getUsuario, Usuario::setUsuario);
+        
+        binder.forField(rolComboBox)
+                .bind(Usuario::getRol, Usuario::setRol);
+        
+        binder.forField(personaComboBox)
+                .bind(Usuario::getPersona, Usuario::setPersona);
+        
+        binder.forField(activoCheckbox)
+                .bind(Usuario::isActivo, Usuario::setActivo);
+        
+        // Nota: passwordField se maneja especialmente en beforeSave()
     }
 
     @Override
@@ -123,20 +138,14 @@ public class UsuariosView extends AbstractCrudView<Usuario> {
 
     @Override
     protected void configureFormLayout(FormLayout formLayout) {
-        binder.forField(usuarioField)
-                .withValidator(new StringLengthValidator(
-                        "El nombre de usuario debe contener al menos 3 caracteres", 3, null))
-                .bind(Usuario::getUsuario, Usuario::setUsuario);
-
-         rolComboBox.setItems(rolService.findAll());
-         rolComboBox.setItemLabelGenerator(Rol::getCargo); // Asumiendo que Rol tiene un método getCargo
-         binder.forField(rolComboBox).bind(Usuario::getRol, Usuario::setRol);
-
-         personaComboBox.setItems(personaService.findAll());
-         personaComboBox.setItemLabelGenerator(Persona::getNombreCompleto); // Asumiendo que Persona tiene un método getNombreCompleto
-         binder.forField(personaComboBox).bind(Usuario::getPersona, Usuario::setPersona);
-
-        binder.forField(activoCheckbox).bind(Usuario::isActivo, Usuario::setActivo);
+        // Configurar items de ComboBoxes
+        rolComboBox.setItems(rolService.findAll());
+        rolComboBox.setItemLabelGenerator(Rol::getCargo);
+        
+        personaComboBox.setItems(personaService.findAll());
+        personaComboBox.setItemLabelGenerator(Persona::getNombreCompleto);
+        
+        // Binding se configura en configureBinder() para mantener consistencia
 
         formLayout.add(rolComboBox, personaComboBox, usuarioField, passwordField, activoCheckbox);
     }

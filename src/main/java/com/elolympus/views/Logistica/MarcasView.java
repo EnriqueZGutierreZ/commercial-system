@@ -87,8 +87,18 @@ public class MarcasView extends AbstractCrudView<Marca> {
 
     @Override
     protected void configureBinder() {
-        // El binder ya está inicializado en la clase base
-        // Aquí solo agregamos los bindings específicos
+        // Configurar binding explícito para cada campo
+        binder.forField(nombre)
+                .bind(Marca::getNombre, Marca::setNombre);
+        
+        binder.forField(descripcion)
+                .bind(Marca::getDescripcion, Marca::setDescripcion);
+        
+        binder.forField(codigo)
+                .bind(Marca::getCodigo, Marca::setCodigo);
+        
+        binder.forField(creador)
+                .bind(Marca::getCreador, Marca::setCreador);
     }
 
     @Override
@@ -121,10 +131,7 @@ public class MarcasView extends AbstractCrudView<Marca> {
         creador = new TextField("Creador", "");
         creador.setReadOnly(true);
 
-        binder.forField(nombre).bind(Marca::getNombre, Marca::setNombre);
-        binder.forField(descripcion).bind(Marca::getDescripcion, Marca::setDescripcion);
-        binder.forField(codigo).bind(Marca::getCodigo, Marca::setCodigo);
-        binder.forField(creador).bind(Marca::getCreador, null);
+        // Binding se configura en configureBinder() para mantener consistencia
 
         formLayout.add(nombre, descripcion, codigo, creador);
     }

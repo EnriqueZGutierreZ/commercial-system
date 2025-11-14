@@ -63,12 +63,8 @@ public abstract class AbstractCrudView<T extends AbstractEntity> extends Div imp
         addClassNames(getViewClassName());
         setSizeFull();
         
-        try {
-            binder = new BeanValidationBinder<>(getEntityClass());
-            configureBinder();
-        } catch (Exception e) {
-            System.out.println("ERROR al configurar binder: " + e.getMessage());
-        }
+        // Solo crear el binder, NO configurarlo aún
+        binder = new BeanValidationBinder<>(getEntityClass());
         
         // NO llamar a createUI() aquí - será llamado desde initialize()
     }
@@ -171,7 +167,17 @@ public abstract class AbstractCrudView<T extends AbstractEntity> extends Div imp
         editorDiv.setClassName("editor");
         editorLayoutDiv.add(editorDiv);
         
+        // Primero crear los campos del formulario
         configureFormLayout(formLayout);
+        
+        // DESPUÉS configurar el binding (ahora que los campos existen)
+        try {
+            configureBinder();
+        } catch (Exception e) {
+            System.out.println("ERROR al configurar binder: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
         editorDiv.add(formLayout);
         createButtonLayout(editorLayoutDiv);
         splitLayout.addToSecondary(editorLayoutDiv);

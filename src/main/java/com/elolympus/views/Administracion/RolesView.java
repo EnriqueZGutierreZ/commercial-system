@@ -92,7 +92,27 @@ public class RolesView extends AbstractCrudView<Rol> {
 
     @Override
     protected void configureBinder() {
-        // El binder ya está inicializado en la clase base
+        // Configurar binding explícito para cada campo
+        binder.forField(area)
+                .bind(Rol::getArea, Rol::setArea);
+        
+        binder.forField(cargo)
+                .bind(Rol::getCargo, Rol::setCargo);
+        
+        binder.forField(descripcion)
+                .bind(Rol::getDescripcion, Rol::setDescripcion);
+        
+        binder.forField(canCreate)
+                .bind(Rol::getCanCreate, Rol::setCanCreate);
+        
+        binder.forField(canRead)
+                .bind(Rol::getCanRead, Rol::setCanRead);
+        
+        binder.forField(canUpdate)
+                .bind(Rol::getCanUpdate, Rol::setCanUpdate);
+        
+        binder.forField(canDelete)
+                .bind(Rol::getCanDelete, Rol::setCanDelete);
     }
 
     @Override
@@ -143,13 +163,7 @@ public class RolesView extends AbstractCrudView<Rol> {
         canUpdate = new Checkbox("Puede Actualizar");
         canDelete = new Checkbox("Puede Eliminar");
 
-        binder.forField(area).bind(Rol::getArea, Rol::setArea);
-        binder.forField(cargo).bind(Rol::getCargo, Rol::setCargo);
-        binder.forField(descripcion).bind(Rol::getDescripcion, Rol::setDescripcion);
-        binder.forField(canCreate).bind(Rol::getCanCreate, Rol::setCanCreate);
-        binder.forField(canRead).bind(Rol::getCanRead, Rol::setCanRead);
-        binder.forField(canUpdate).bind(Rol::getCanUpdate, Rol::setCanUpdate);
-        binder.forField(canDelete).bind(Rol::getCanDelete, Rol::setCanDelete);
+        // Binding se configura en configureBinder() para mantener consistencia
 
         formLayout.add(area, cargo, descripcion, canCreate, canRead, canUpdate, canDelete);
     }

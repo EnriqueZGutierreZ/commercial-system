@@ -87,7 +87,18 @@ public class LineasView extends AbstractCrudView<Linea> {
 
     @Override
     protected void configureBinder() {
-        // El binder ya está inicializado en la clase base
+        // Configurar binding explícito para cada campo
+        binder.forField(nombre)
+                .bind(Linea::getNombre, Linea::setNombre);
+        
+        binder.forField(descripcion)
+                .bind(Linea::getDescripcion, Linea::setDescripcion);
+        
+        binder.forField(codigo)
+                .bind(Linea::getCodigo, Linea::setCodigo);
+        
+        binder.forField(creador)
+                .bind(Linea::getCreador, Linea::setCreador);
     }
 
     @Override
@@ -120,10 +131,7 @@ public class LineasView extends AbstractCrudView<Linea> {
         creador = new TextField("Creador", "");
         creador.setReadOnly(true);
 
-        binder.forField(nombre).bind(Linea::getNombre, Linea::setNombre);
-        binder.forField(descripcion).bind(Linea::getDescripcion, Linea::setDescripcion);
-        binder.forField(codigo).bind(Linea::getCodigo, Linea::setCodigo);
-        binder.forField(creador).bind(Linea::getCreador, null);
+        // Binding se configura en configureBinder() para mantener consistencia
 
         formLayout.add(nombre, descripcion, codigo, creador);
     }

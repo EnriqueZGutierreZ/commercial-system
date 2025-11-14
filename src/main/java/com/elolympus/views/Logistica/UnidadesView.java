@@ -87,7 +87,18 @@ public class UnidadesView extends AbstractCrudView<Unidad> {
 
     @Override
     protected void configureBinder() {
-        // El binder ya está inicializado en la clase base
+        // Configurar binding explícito para cada campo
+        binder.forField(nombre)
+                .bind(Unidad::getNombre, Unidad::setNombre);
+        
+        binder.forField(abreviatura)
+                .bind(Unidad::getAbreviatura, Unidad::setAbreviatura);
+        
+        binder.forField(descripcion)
+                .bind(Unidad::getDescripcion, Unidad::setDescripcion);
+        
+        binder.forField(creador)
+                .bind(Unidad::getCreador, Unidad::setCreador);
     }
 
     @Override
@@ -120,10 +131,7 @@ public class UnidadesView extends AbstractCrudView<Unidad> {
         creador = new TextField("Creador", "");
         creador.setReadOnly(true);
 
-        binder.forField(nombre).bind(Unidad::getNombre, Unidad::setNombre);
-        binder.forField(abreviatura).bind(Unidad::getAbreviatura, Unidad::setAbreviatura);
-        binder.forField(descripcion).bind(Unidad::getDescripcion, Unidad::setDescripcion);
-        binder.forField(creador).bind(Unidad::getCreador, null);
+        // Binding se configura en configureBinder() para mantener consistencia
 
         formLayout.add(nombre, abreviatura, descripcion, creador);
     }

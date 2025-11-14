@@ -49,7 +49,7 @@ public class DireccionView extends Dialog {
     private UbigeoService ubigeoService;
     private DireccionView direccionView;
     public Direccion direccion;
-    private final BeanValidationBinder<DireccionView> binder = new BeanValidationBinder<>(DireccionView.class);
+    private final BeanValidationBinder<Direccion> binder = new BeanValidationBinder<>(Direccion.class);
 
     //GRID
     private final Grid<Direccion> grid = new Grid<>(Direccion.class);

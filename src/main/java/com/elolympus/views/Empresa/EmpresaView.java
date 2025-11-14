@@ -81,7 +81,33 @@ public class EmpresaView extends AbstractCrudView<Empresa> {
 
     @Override
     protected void configureBinder() {
-        // El binder ya está inicializado en la clase base
+        // Configurar binding explícito para cada campo
+        binder.forField(direccion)
+                .bind(Empresa::getDireccion, Empresa::setDireccion);
+        
+        binder.forField(folderTemps)
+                .bind(Empresa::getFolderTemps, Empresa::setFolderTemps);
+        
+        binder.forField(folderReports)
+                .bind(Empresa::getFolderReports, Empresa::setFolderReports);
+        
+        binder.forField(allowBuyWithoutStock)
+                .bind(Empresa::getAllowBuyWithoutStock, Empresa::setAllowBuyWithoutStock);
+        
+        binder.forField(requireSalesPin)
+                .bind(Empresa::getRequireSalesPin, Empresa::setRequireSalesPin);
+        
+        binder.forField(documentoTipoXdefecto)
+                .bind(Empresa::getDocumentoTipoXdefecto, Empresa::setDocumentoTipoXdefecto);
+        
+        binder.forField(logoEnterprise)
+                .bind(Empresa::getLogoEnterprise, Empresa::setLogoEnterprise);
+        
+        binder.forField(logoWidth)
+                .bind(Empresa::getLogoWidth, Empresa::setLogoWidth);
+        
+        binder.forField(commercialName)
+                .bind(Empresa::getCommercialName, Empresa::setCommercialName);
     }
 
     @Override
@@ -126,15 +152,7 @@ public class EmpresaView extends AbstractCrudView<Empresa> {
         logoWidth = new TextField("Ancho del Logo");
         commercialName = new TextField("Nombre Comercial");
 
-        binder.forField(direccion).bind(Empresa::getDireccion, Empresa::setDireccion);
-        binder.forField(folderTemps).bind(Empresa::getFolderTemps, Empresa::setFolderTemps);
-        binder.forField(folderReports).bind(Empresa::getFolderReports, Empresa::setFolderReports);
-        binder.forField(allowBuyWithoutStock).bind(Empresa::getAllowBuyWithoutStock, Empresa::setAllowBuyWithoutStock);
-        binder.forField(requireSalesPin).bind(Empresa::getRequireSalesPin, Empresa::setRequireSalesPin);
-        binder.forField(documentoTipoXdefecto).bind(Empresa::getDocumentoTipoXdefecto, Empresa::setDocumentoTipoXdefecto);
-        binder.forField(logoEnterprise).bind(Empresa::getLogoEnterprise, Empresa::setLogoEnterprise);
-        binder.forField(logoWidth).bind(Empresa::getLogoWidth, Empresa::setLogoWidth);
-        binder.forField(commercialName).bind(Empresa::getCommercialName, Empresa::setCommercialName);
+        // Binding se configura en configureBinder() para mantener consistencia
 
         formLayout.add(direccion, folderTemps, folderReports, allowBuyWithoutStock, 
                       requireSalesPin, documentoTipoXdefecto, logoEnterprise, logoWidth, commercialName);

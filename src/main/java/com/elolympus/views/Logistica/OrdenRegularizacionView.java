@@ -162,7 +162,17 @@ public class OrdenRegularizacionView extends Div {
 //        editorDiv.add(div);
 //        formLayout.add(numero, fecha, almacen, movimiento, observaciones, producto, cantidad, cantidadFraccion, fechaVencimiento);
 
-        binder.bindInstanceFields(this);
+        // Configurar binding explícito para campos de cabecera
+        binder.forField(numero)
+                .bind(OrdenRegularizacion::getNumero, OrdenRegularizacion::setNumero);
+        
+        binder.forField(movimiento)
+                .bind(OrdenRegularizacion::getMovimiento, OrdenRegularizacion::setMovimiento);
+        
+        binder.forField(observaciones)
+                .bind(OrdenRegularizacion::getObservaciones, OrdenRegularizacion::setObservaciones);
+        
+        // Nota: fecha y almacen se configuran explícitamente más abajo
         //div.add(formLayout);
         setupButtons(editorDiv);
         return editorDiv;
