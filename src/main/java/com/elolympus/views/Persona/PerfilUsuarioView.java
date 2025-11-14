@@ -52,7 +52,7 @@ public class PerfilUsuarioView extends VerticalLayout implements HasUrlParameter
         });
     }
     private void actualizarUsuario() {
-        Optional<Usuario> optionalUsuario = usuarioService.findById(Long.parseLong(userId));
+        Optional<Usuario> optionalUsuario = usuarioService.get(Long.parseLong(userId));
         if (optionalUsuario.isPresent()) {
             Usuario usuario = optionalUsuario.get();
             // Encriptamos la nueva contraseña antes de guardar
@@ -86,7 +86,7 @@ public class PerfilUsuarioView extends VerticalLayout implements HasUrlParameter
         if (userId != null) {
             // Lógica para cargar datos del usuario usando el userId
             // Por ejemplo:
-            Optional<Usuario> optionalUsuario = usuarioService.findById(Long.parseLong(userId));
+            Optional<Usuario> optionalUsuario = usuarioService.get(Long.parseLong(userId));
             if (optionalUsuario.isPresent()) {
                 Usuario usuario = optionalUsuario.get();
                 nombre.setValue(usuario.getPersona().getNombres());

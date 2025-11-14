@@ -4,33 +4,36 @@ import com.elolympus.data.Almacen.Almacen;
 import com.elolympus.services.repository.AlmacenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
-public class AlmacenService {
-    private final AlmacenRepository repository;
+public class AlmacenService extends AbstractCrudService<Almacen, AlmacenRepository> {
+
+    private final AlmacenRepository almacenRepository;
 
     @Autowired
     public AlmacenService(AlmacenRepository almacenRepository) {
-        this.repository = almacenRepository;
+        this.almacenRepository = almacenRepository;
     }
 
-    @Transactional(readOnly = true)
-    public List<Almacen> findAll() {
-        return repository.findAll();
+    @Override
+    protected AlmacenRepository getRepository() {
+        return almacenRepository;
     }
 
-    public Almacen save(Almacen almacen) {
-        return repository.save(almacen);
+    @Override
+    protected String getTableName() {
+        return "almacen";
     }
 
-    public Almacen update(Almacen almacen) {
-        return repository.save(almacen);
+    @Override
+    protected String getEntityName() {
+        return "Almacén";
     }
 
-    public void delete(Almacen almacen) {
-        repository.delete(almacen);
+    @Override
+    protected void copyEditableFields(Almacen source, Almacen target) {
+        target.setCodigo(source.getCodigo());
+        target.setDescripcion(source.getDescripcion());
+        target.setSucursal(source.getSucursal());
     }
 }

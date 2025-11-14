@@ -1,52 +1,46 @@
 package com.elolympus.services.services;
 
-import com.elolympus.data.Administracion.Persona;
-import com.elolympus.data.Administracion.Rol;
 import com.elolympus.data.Administracion.Direccion;
 import com.elolympus.services.repository.DireccionRepository;
-import com.elolympus.services.specifications.UsuarioSpecifications;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
-public class DireccionService {
+public class DireccionService extends AbstractCrudService<Direccion, DireccionRepository> {
 
-    private final DireccionRepository repository;
+    protected final DireccionRepository repository;
 
     public DireccionService(DireccionRepository repository) {
         this.repository = repository;
     }
 
-    @Transactional(readOnly = true)
-    public List<Direccion> findAll() {
-        return repository.findAll();
+    @Override
+    protected DireccionRepository getRepository() {
+        return repository;
     }
 
+    @Override
+    protected String getTableName() {
+        return "direccion";
+    }
+
+    @Override
+    protected String getEntityName() {
+        return "Dirección";
+    }
+
+    @Override
+    protected void copyEditableFields(Direccion source, Direccion target) {
+        target.setDescripcion(source.getDescripcion());
+        target.setReferencia(source.getReferencia());
+        target.setUbigeo(source.getUbigeo());
+    }
+
+    // Método de búsqueda personalizado
     public List<Direccion> findAllByActivo(Boolean activo) {
         return repository.findAll((root, query, criteriaBuilder) ->
                 criteriaBuilder.equal(root.get("activo"), activo)
         );
-    }
-
-    @Transactional
-    public Direccion save(Direccion direccion) {
-        return repository.save(direccion);
-    }
-
-    @Transactional
-    public Direccion update(Direccion direccion) {
-        return repository.save(direccion);
-    }
-
-    public void delete(Direccion direccion) {
-        repository.delete(direccion);
-    }
-
-    public Optional<Direccion> findById(Long id) {
-        return repository.findById(id);
     }
 }

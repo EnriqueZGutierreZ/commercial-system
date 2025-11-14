@@ -1,41 +1,49 @@
 package com.elolympus.services.services;
 
-import com.elolympus.services.repository.KardexRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import com.elolympus.data.Almacen.Kardex;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.Optional;
+import com.elolympus.services.repository.KardexRepository;
+import org.springframework.stereotype.Service;
 
 @Service
-public class KardexService {
-    private final KardexRepository repository;
+public class KardexService extends AbstractCrudService<Kardex, KardexRepository> {
 
-    @Autowired
-    public KardexService(KardexRepository kardexRepository) {
-        this.repository = kardexRepository;
+    protected final KardexRepository repository;
+
+    public KardexService(KardexRepository repository) {
+        this.repository = repository;
     }
 
-    public List<Kardex> findAll() {
-        return repository.findAll();
+    @Override
+    protected KardexRepository getRepository() {
+        return repository;
     }
 
-    public Optional<Kardex> findById(Long id) {
-        return repository.findById(id);
+    @Override
+    protected String getTableName() {
+        return "kardex";
     }
 
-    public Kardex save(Kardex kardex) {
-        return repository.save(kardex);
+    @Override
+    protected String getEntityName() {
+        return "Kardex";
     }
 
-    public Kardex update(Kardex kardex) {
-        return repository.save(kardex);
+    @Override
+    protected void copyEditableFields(Kardex source, Kardex target) {
+        target.setOrdenId(source.getOrdenId());
+        target.setFecha(source.getFecha());
+        target.setFechaOrden(source.getFechaOrden());
+        target.setMovimiento(source.getMovimiento());
+        target.setAlmacen(source.getAlmacen());
+        target.setOrigen(source.getOrigen());
+        target.setDestino(source.getDestino());
+        target.setPrecioCosto(source.getPrecioCosto());
+        target.setPrecioVenta(source.getPrecioVenta());
+        target.setStockAnterior(source.getStockAnterior());
+        target.setIngreso(source.getIngreso());
+        target.setSalida(source.getSalida());
+        target.setStock(source.getStock());
+        target.setProducto(source.getProducto());
+        target.setFechaVencimiento(source.getFechaVencimiento());
     }
-
-    public void delete(Kardex kardex) {
-        repository.delete(kardex);
-    }
-
 }

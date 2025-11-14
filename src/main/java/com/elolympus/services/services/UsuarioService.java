@@ -9,10 +9,9 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
-public class UsuarioService {
+public class UsuarioService extends AbstractCrudService<Usuario, UsuarioRepository> {
 
     private final UsuarioRepository repository;
 
@@ -20,39 +19,44 @@ public class UsuarioService {
         this.repository = repository;
     }
 
-    public int count() {
-        return (int) repository.count();
+    @Override
+    protected UsuarioRepository getRepository() {
+        return repository;
     }
 
-    // Método para encontrar todos los usuarios
-    public List<Usuario> findAll() {
-        return repository.findAll();
+    @Override
+    protected String getTableName() {
+        return "usuario";
     }
+
+    @Override
+    protected String getEntityName() {
+        return "Usuario";
+    }
+
+    @Override
+    protected void copyEditableFields(Usuario source, Usuario target) {
+        target.setUsuario(source.getUsuario());
+        target.setPassword(source.getPassword());
+        target.setPersona(source.getPersona());
+        target.setRol(source.getRol());
+    }
+
+    // Métodos adicionales específicos de Usuario
+    // El método count() ya está heredado de AbstractCrudService
+
     public List<Usuario> findAllByActivo(Boolean activo) {
-        return repository.findAll(UsuarioSpecifications.conEstadoActivo(true));
+        return repository.findAll(UsuarioSpecifications.conEstadoActivo(activo));
     }
 
-    // Método para guardar o actualizar un usuario
-    public Usuario update(Usuario usuario) {
-        // Aquí puedes añadir lógica antes de guardar el usuario
-        return repository.save(usuario);
-    }
     public Usuario save(Usuario usuario) {
-        // Aquí puedes añadir lógica antes de guardar el usuario
         return repository.save(usuario);
     }
 
-    // Método para eliminar un usuario
     public void delete(Usuario usuario) {
         repository.delete(usuario);
     }
 
-    // Método para encontrar un usuario por ID
-    public Optional<Usuario> findById(Long id) {
-        return repository.findById(id);
-    }
-
-    // Método para buscar usuarios por nombre de usuario, rol y persona
     public List<Usuario> findByUsernameRolAndPersona(String usuario, Rol rol, Persona persona) {
         Specification<Usuario> spec = Specification.where(null);
 

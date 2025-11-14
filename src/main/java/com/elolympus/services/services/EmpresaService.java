@@ -5,32 +5,41 @@ import com.elolympus.services.repository.EmpresaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
-public class EmpresaService {
+public class EmpresaService extends AbstractCrudService<Empresa, EmpresaRepository> {
+
     private final EmpresaRepository repository;
 
     @Autowired
-    public EmpresaService(EmpresaRepository empresaRepository) {
-        this.repository = empresaRepository;
+    public EmpresaService(EmpresaRepository repository) {
+        this.repository = repository;
     }
 
-    public List<Empresa> findAll() {
-        return repository.findAll();
+    @Override
+    protected EmpresaRepository getRepository() {
+        return repository;
     }
 
-    public Empresa save(Empresa empresa) {
-        return repository.save(empresa);
+    @Override
+    protected String getTableName() {
+        return "empresa";
     }
 
-    public Empresa update(Empresa empresa) {
-        return repository.save(empresa);
+    @Override
+    protected String getEntityName() {
+        return "Empresa";
     }
 
-    public void delete(Empresa empresa) {
-        repository.delete(empresa);
+    @Override
+    protected void copyEditableFields(Empresa source, Empresa target) {
+        target.setDireccion(source.getDireccion());
+        target.setFolderTemps(source.getFolderTemps());
+        target.setFolderReports(source.getFolderReports());
+        target.setAllowBuyWithoutStock(source.getAllowBuyWithoutStock());
+        target.setRequireSalesPin(source.getRequireSalesPin());
+        target.setDocumentoTipoXdefecto(source.getDocumentoTipoXdefecto());
+        target.setLogoEnterprise(source.getLogoEnterprise());
+        target.setLogoWidth(source.getLogoWidth());
+        target.setCommercialName(source.getCommercialName());
     }
-
-
 }

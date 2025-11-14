@@ -5,36 +5,44 @@ import com.elolympus.services.repository.RolRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
-public class RolService {
+public class RolService extends AbstractCrudService<Rol, RolRepository> {
 
     private final RolRepository repository;
+
     public RolService(RolRepository repository) {
-        this.repository=repository;
+        this.repository = repository;
     }
 
-    // Método para recuperar todos los roles
-    public List<Rol> findAll() {
-        return repository.findAll();
+    @Override
+    protected RolRepository getRepository() {
+        return repository;
     }
 
-    // Método para eliminar un rol
-    public void delete(Rol rol) {
-        repository.delete(rol);
+    @Override
+    protected String getTableName() {
+        return "rol";
     }
 
-    // Método para buscar un rol por su ID
-    public Optional<Rol> findById(Long id) {
-        return repository.findById(id);
-    }
-    public Rol update(Rol rol) {
-        return repository.save(rol);
+    @Override
+    protected String getEntityName() {
+        return "Rol";
     }
 
+    @Override
+    protected void copyEditableFields(Rol source, Rol target) {
+        target.setArea(source.getArea());
+        target.setCargo(source.getCargo());
+        target.setDescripcion(source.getDescripcion());
+        target.setCanCreate(source.getCanCreate());
+        target.setCanRead(source.getCanRead());
+        target.setCanUpdate(source.getCanUpdate());
+        target.setCanDelete(source.getCanDelete());
+    }
+
+    // Método de búsqueda personalizado
     public List<Rol> findRolesByAreaContainingAndCargoContainingAndDescriptionContaining(String area, String cargo, String description) {
         return repository.findRolesByAreaContainingAndCargoContainingAndDescripcionContaining(area, cargo, description);
     }
-
 }

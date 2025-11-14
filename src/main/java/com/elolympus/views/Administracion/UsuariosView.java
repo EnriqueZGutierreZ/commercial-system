@@ -7,25 +7,21 @@ import com.elolympus.security.PasswordUtils;
 import com.elolympus.services.services.PersonaService;
 import com.elolympus.services.services.RolService;
 import com.elolympus.services.services.UsuarioService;
+import com.elolympus.services.services.AbstractCrudService;
+import com.elolympus.views.AbstractCrudView;
 import com.elolympus.views.MainLayout;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.checkbox.Checkbox;
-import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.validator.StringLengthValidator;
@@ -41,167 +37,92 @@ import java.util.List;
 @PageTitle("Usuarios")
 @Route(value = "usuario/:UsuarioID?/:action?(edit)", layout = MainLayout.class)
 @PermitAll
-public class UsuariosView extends Div {
+public class UsuariosView extends AbstractCrudView<Usuario> {
 
     private final UsuarioService usuarioService;
     private final RolService rolService;
     private final PersonaService personaService;
     private final PasswordUtils passwordUtils;
-    private BeanValidationBinder<Usuario> binder;
-    private Usuario usuario;
 
-    // Componentes UI
-    private Grid<Usuario> gridUsuarios = new Grid<>(Usuario.class, false);
+    // Componentes UI adicionales
     private final TextField usuarioField = new TextField("Usuario");
     private final PasswordField passwordField = new PasswordField("Contraseña");
     private final Checkbox activoCheckbox = new Checkbox("Activo");
     private final ComboBox<Rol> rolComboBox = new ComboBox<>("Rol");
     private final ComboBox<Persona> personaComboBox = new ComboBox<>("Persona");
-    private final Button save = new Button("Guardar");
-    private final Button cancel = new Button("Cancelar");
-    private final Button delete = new Button("Eliminar", VaadinIcon.TRASH.create());
 
     // Componentes de búsqueda
     private final TextField usuarioBusqueda = new TextField("Usuario");
     private final ComboBox<Rol> rolBusqueda = new ComboBox<>("Rol");
     private final ComboBox<Persona> personaBusqueda = new ComboBox<>("Persona");
 
-    private final FormLayout formLayout = new FormLayout();
-
-    private String Password;
+    private String savedPassword;
 
     @Autowired
     public UsuariosView(UsuarioService usuarioService, RolService rolService, PersonaService personaService, PasswordUtils passwordUtils) {
+        super();
         this.usuarioService = usuarioService;
         this.rolService = rolService;
         this.personaService = personaService;
         this.passwordUtils = passwordUtils;
-        try {
-            // Configure Form
-            binder = new BeanValidationBinder<>(Usuario.class);
-            // Bind fields. This is where you'd define e.g. validation rules
-            binder.bindInstanceFields(this);
-        }catch (Exception e){
-            System.out.println("ERRORRRR: " + e.getMessage());
-        }
-        addClassNames("usuario-view");
-        setSizeFull();
-        // Configura la búsqueda después de inicializar los componentes
-        setupSearch();
-        setupGrid();
-        setupForm();
-        usuarioBusqueda.addValueChangeListener(e -> applyFilter());
-        rolBusqueda.setItemLabelGenerator(Rol::getCargo); // Asumiendo que Rol tiene un método getCargo
-        rolBusqueda.setItems(rolService.findAll());
-        rolBusqueda.addValueChangeListener(e -> applyFilter());
-        personaBusqueda.setItemLabelGenerator(Persona::getNombreCompleto); // Asumiendo que Persona tiene un método getNombreCompleto
-        personaBusqueda.setItems(personaService.findAll());
-        personaBusqueda.addValueChangeListener(e -> applyFilter());
-
-        SplitLayout layout = new SplitLayout(createGridLayout(), createEditorLayout());
-        layout.setSizeFull();
-        add(layout);
-        refreshGrid();
+        initialize();
     }
 
-    private final SerializableBiConsumer<Span, Usuario> EstadoComponenteActivo = (
-            span, usuario) -> {
-        String theme = String.format("badge %s",
-                usuario.isActivo() ? "success" : "error");
-        span.getElement().setAttribute("theme", theme);
-        span.setText(usuario.isActivo()?"Activo":"Desactivado");
-    };
-    private ComponentRenderer<Span, Usuario> CrearComponmenteActivoRenderer() {
-        return new ComponentRenderer<>(Span::new, EstadoComponenteActivo);
+    @Override
+    protected Class<Usuario> getEntityClass() {
+        return Usuario.class;
     }
 
-    private void setupGrid() {
-        gridUsuarios = new Grid<>();
-        gridUsuarios.setClassName("grilla");
-        gridUsuarios.setHeight("86%");
-        gridUsuarios.addColumn(Usuario::getUsuario).setHeader("Usuario");
-        gridUsuarios.addColumn(usuario -> usuario.getRol() != null ? usuario.getRol().getCargo() : "").setHeader("Rol");
-        gridUsuarios.addColumn(usuario -> usuario.getPersona() != null ? usuario.getPersona().getNombreCompleto() : "").setHeader("Persona");
-        gridUsuarios.addColumn(CrearComponmenteActivoRenderer()).setHeader("Estado");
-
-        gridUsuarios.asSingleSelect().addValueChangeListener(event -> editUsuario(event.getValue()));
+    @Override
+    protected AbstractCrudService<Usuario, ?> getService() {
+        return usuarioService;
     }
 
-    private Component createEditorLayout() {
-        Div editorDiv = new Div();
-        editorDiv.setHeightFull();
-        editorDiv.setClassName("editor-layout");
-        Div div = new Div();
-        div.setClassName("editor");
-        editorDiv.add(div);
-        formLayout.add(rolComboBox,personaComboBox,usuarioField, passwordField, activoCheckbox);
-        save.addClickListener(event -> save());
-        cancel.addClickListener(event -> clearForm());
-        delete.addClickListener(event -> delete());
+    @Override
+    protected String getViewClassName() {
+        return "usuario-view";
+    }
 
-        delete.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
-        cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
-        save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+    @Override
+    protected Class<? extends Component> getViewClass() {
+        return UsuariosView.class;
+    }
 
+    @Override
+    protected String getEntityIdParam() {
+        return "UsuarioID";
+    }
+
+    @Override
+    protected String getEditRouteTemplate() {
+        return "usuario/%s/edit";
+    }
+
+    @Override
+    protected String getEntityName() {
+        return "Usuario";
+    }
+
+    @Override
+    protected Usuario createNewEntity() {
+        return new Usuario();
+    }
+
+    @Override
+    protected void configureBinder() {
         binder.bindInstanceFields(this);
-        div.add(formLayout);
-        createButtonLayout(editorDiv);
-        return editorDiv;
-    }
-    private void createButtonLayout(Div editorLayoutDiv) {
-        HorizontalLayout buttonLayout = new HorizontalLayout();
-        buttonLayout.setClassName("button-layout");
-        buttonLayout.add(save, cancel,delete);
-        editorLayoutDiv.add(buttonLayout);
     }
 
-
-    private Component createGridLayout() {
-        // Agrega la búsqueda al layout
-        HorizontalLayout searchDiv = new HorizontalLayout();
-        searchDiv.addClassName("tophl");
-        searchDiv.add(createSearchLayout());
-        add(searchDiv);
-        Div wrapper = new Div();
-        wrapper.setClassName("grid-wrapper");
-        wrapper.setSizeFull();
-        wrapper.add(searchDiv,gridUsuarios);
-        return wrapper;
+    @Override
+    protected void configureGrid(Grid<Usuario> grid) {
+        grid.addColumn(createActivoRenderer()).setHeader("Activo").setAutoWidth(true);
+        grid.addColumn(Usuario::getUsuario).setHeader("Usuario").setAutoWidth(true);
+        grid.addColumn(usuario -> usuario.getRol() != null ? usuario.getRol().getCargo() : "").setHeader("Rol").setAutoWidth(true);
+        grid.addColumn(usuario -> usuario.getPersona() != null ? usuario.getPersona().getNombreCompleto() : "").setHeader("Persona").setAutoWidth(true);
     }
 
-    private void refreshGrid() {
-        // Actualización de los datos mostrados en el grid
-        gridUsuarios.setItems(usuarioService.findAll());
-    }
-
-    private void setupSearch() {
-        usuarioBusqueda.setPlaceholder("Buscar por usuario");
-        rolBusqueda.setPlaceholder("Buscar por rol");
-        rolBusqueda.setItemLabelGenerator(Rol::getCargo); // Asumiendo que Rol tiene un método getCargo
-        rolBusqueda.setItems(rolService.findAll());
-        personaBusqueda.setPlaceholder("Buscar por persona");
-        personaBusqueda.setItemLabelGenerator(Persona::getNombreCompleto); // Asumiendo que Persona tiene un método getNombreCompleto
-        personaBusqueda.setItems(personaService.findAll());
-
-    }
-    private void applyFilter() {
-        String usernameValue = usuarioBusqueda.getValue();
-        Rol rolValue = rolBusqueda.getValue();
-        Persona personaValue = personaBusqueda.getValue();
-
-        // Aquí deberías llamar a un método del servicio que permita filtrar por estos tres criterios.
-        // Este es un ejemplo de cómo podría ser este método:
-        List<Usuario> filteredUsers = usuarioService.findByUsernameRolAndPersona(usernameValue, rolValue, personaValue);
-        gridUsuarios.setItems(filteredUsers);
-    }
-    private Component createSearchLayout() {
-        HorizontalLayout searchLayout = new HorizontalLayout();
-        searchLayout.add(usuarioBusqueda, rolBusqueda, personaBusqueda);
-        return searchLayout;
-    }
-
-    private void setupForm() {
-        // Configura los campos del formulario para usarlos con el Binder
+    @Override
+    protected void configureFormLayout(FormLayout formLayout) {
         binder.forField(usuarioField)
                 .withValidator(new StringLengthValidator(
                         "El nombre de usuario debe contener al menos 3 caracteres", 3, null))
@@ -215,85 +136,92 @@ public class UsuariosView extends Div {
          personaComboBox.setItemLabelGenerator(Persona::getNombreCompleto); // Asumiendo que Persona tiene un método getNombreCompleto
          binder.forField(personaComboBox).bind(Usuario::getPersona, Usuario::setPersona);
 
-        //activoCheckbox.setValue(personaService.);
-        //activoCheckbox.setValue((Usuario::isActivo) ? Boolean.TRUE : Boolean.FALSE);
-        //activoCheckbox.setValue(() ? Boolean.TRUE : Boolean.FALSE); // Asumiendo que Persona tiene un método getNombreCompleto
         binder.forField(activoCheckbox).bind(Usuario::isActivo, Usuario::setActivo);
+
+        formLayout.add(rolComboBox, personaComboBox, usuarioField, passwordField, activoCheckbox);
     }
 
-    private void save() {
+    @Override
+    protected boolean hasFilters() {
+        return true;
+    }
 
-        System.out.println("USUARIO: "+this.usuario );
-        try {
-            // Verifica si el usuario tiene información válida antes de intentar guardar
-            if (usuarioField.isEmpty() && passwordField.isEmpty()) {
-                Notification.show("No se puede guardar un usuario vacío.");
-            }else{
-                if (this.usuario == null) {
-                    this.usuario = new Usuario();
-                }
-                binder.writeBean(this.usuario);
-            }
+    @Override
+    protected HorizontalLayout createFilterLayout() {
+        usuarioBusqueda.setPlaceholder("Buscar por usuario");
+        usuarioBusqueda.addValueChangeListener(e -> applyFilter());
 
-            // Verifica si es un nuevo usuario o una actualización
-            if (this.usuario.getId() == null) {
-                // Nuevo usuario
-                if (!passwordField.isEmpty()) {
-                    this.usuario.setPassword(passwordUtils.encryptPassword(passwordField.getValue()));
-                }
-                // Asume que usuarioService.save() maneja tanto la creación como la actualización.
-                usuarioService.save(this.usuario);
-                Notification.show("Datos Agregados");
-            } else {
-                // Actualización de un usuario existente
-                if (!passwordField.isEmpty()) {
-                    this.usuario.setPassword(passwordUtils.encryptPassword(passwordField.getValue()));
-                } else {
-                    // Si el campo de contraseña está vacío, no actualices la contraseña
-                    this.usuario.setPassword(Password);
-                }
-                usuarioService.update(this.usuario); // Asegúrate de que este método exista y haga lo que esperas
-                Notification.show("Datos actualizados");
-            }
+        rolBusqueda.setPlaceholder("Buscar por rol");
+        rolBusqueda.setItemLabelGenerator(Rol::getCargo);
+        rolBusqueda.setItems(rolService.findAll());
+        rolBusqueda.addValueChangeListener(e -> applyFilter());
 
-            clearForm();
-            refreshGrid();
-            UI.getCurrent().navigate(UsuariosView.class);
-        } catch (ObjectOptimisticLockingFailureException exception) {
-            Notification n = Notification.show(
-                    "Error al actualizar los datos. Alguien más actualizó el registro mientras usted hacía cambios.");
-            n.setPosition(Notification.Position.MIDDLE);
-            n.addThemeVariants(NotificationVariant.LUMO_ERROR);
-        } catch (ValidationException validationException) {
-            Notification.show("No se pudieron actualizar los datos. Compruebe nuevamente que todos los valores sean válidos.");
+        personaBusqueda.setPlaceholder("Buscar por persona");
+        personaBusqueda.setItemLabelGenerator(Persona::getNombreCompleto);
+        personaBusqueda.setItems(personaService.findAll());
+        personaBusqueda.addValueChangeListener(e -> applyFilter());
+
+        HorizontalLayout searchLayout = new HorizontalLayout();
+        searchLayout.add(usuarioBusqueda, rolBusqueda, personaBusqueda);
+        return searchLayout;
+    }
+
+    private void applyFilter() {
+        String usernameValue = usuarioBusqueda.getValue();
+        Rol rolValue = rolBusqueda.getValue();
+        Persona personaValue = personaBusqueda.getValue();
+
+        List<Usuario> filteredUsers = usuarioService.findByUsernameRolAndPersona(usernameValue, rolValue, personaValue);
+        grid.setItems(filteredUsers);
+    }
+
+    @Override
+    protected void setupFilterListeners() {
+        // Ya configurado en createFilterLayout
+    }
+
+    @Override
+    protected void beforeSave(Usuario entity) {
+        // Lógica especial de contraseñas
+        if (usuarioField.isEmpty() && passwordField.isEmpty()) {
+            throw new IllegalStateException("No se puede guardar un usuario vacío.");
         }
-    }
 
-    private void delete() {
-        if (this.usuario != null) {
-            usuarioService.delete(this.usuario);
-            refreshGrid();
-            clearForm();
-            Notification.show("Usuario eliminado");
-        }
-    }
-
-    private void clearForm() {
-        this.usuario = null; // Limpiar la referencia al usuario actual
-        this.usuario = new Usuario(); // Cambio clave aquí
-        binder.readBean(this.usuario); // Ahora `usuario` nunca es null
-        save.setText("Guardar"); // Cambiar el texto del botón de vuelta a "Guardar" cuando se limpia el formulario
-    }
-
-    private void editUsuario(Usuario usuario) {
-        if (usuario == null) {
-            clearForm();
+        if (entity.getId() == null) {
+            // Nuevo usuario
+            if (!passwordField.isEmpty()) {
+                entity.setPassword(passwordUtils.encryptPassword(passwordField.getValue()));
+            }
         } else {
-            this.usuario = usuario;
-            binder.readBean(this.usuario);
-            save.setText("Actualizar"); // Cambiar el texto del botón a "Actualizar"
-            Password = this.usuario.getPassword();
-            passwordField.clear(); // Limpiar el campo de contraseña
+            // Actualización de usuario existente
+            if (!passwordField.isEmpty()) {
+                entity.setPassword(passwordUtils.encryptPassword(passwordField.getValue()));
+            } else {
+                // Mantener contraseña anterior si no se cambió
+                entity.setPassword(savedPassword);
+            }
         }
     }
+
+    @Override
+    protected void afterSave(Usuario entity) {
+        passwordField.clear();
+    }
+
+    @Override
+    protected void populateForm(Usuario entity) {
+        super.populateForm(entity);
+        if (entity != null) {
+            savedPassword = entity.getPassword();
+            passwordField.clear();
+        }
+    }
+
+    @Override
+    protected void clearFilters() {
+        if (usuarioBusqueda != null) usuarioBusqueda.clear();
+        if (rolBusqueda != null) rolBusqueda.clear();
+        if (personaBusqueda != null) personaBusqueda.clear();
+    }
+
 }

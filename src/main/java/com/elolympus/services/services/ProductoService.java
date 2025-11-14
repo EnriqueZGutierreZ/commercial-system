@@ -8,16 +8,11 @@ import com.elolympus.services.repository.ProductoRepository;
 import com.elolympus.services.repository.MarcaRepository;
 import com.elolympus.services.repository.LineaRepository;
 import com.elolympus.services.repository.UnidadRepository;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
-
 @Service
-public class ProductoService {
+public class ProductoService extends AbstractCrudService<Producto, ProductoRepository> {
 
     private final ProductoRepository repository;
     private final MarcaRepository marcaRepository;
@@ -34,18 +29,38 @@ public class ProductoService {
         this.unidadRepository = unidadRepository;
     }
 
-    public Page<Producto> list(Pageable pageable) {
-        return repository.findAll(pageable);
+    @Override
+    protected ProductoRepository getRepository() {
+        return repository;
     }
 
-    public List<Producto> findAll() {
-        return repository.findAll();
+    @Override
+    protected String getTableName() {
+        return "producto";
     }
 
-    public List<Producto> findActive() {
-        return repository.findByActivoTrue();
+    @Override
+    protected String getEntityName() {
+        return "Producto";
     }
 
+    @Override
+    protected void copyEditableFields(Producto source, Producto target) {
+        target.setCodigo(source.getCodigo());
+        target.setNombre(source.getNombre());
+        target.setDescripcion(source.getDescripcion());
+        target.setMarca(source.getMarca());
+        target.setLinea(source.getLinea());
+        target.setUnidad(source.getUnidad());
+        target.setPrecioCosto(source.getPrecioCosto());
+        target.setPrecioVenta(source.getPrecioVenta());
+        target.setStockMinimo(source.getStockMinimo());
+        target.setStockMaximo(source.getStockMaximo());
+        target.setPeso(source.getPeso());
+        target.setVolumen(source.getVolumen());
+    }
+
+    @Override
     @Transactional
     public Producto update(Producto entity) {
         // Recargar las entidades relacionadas desde la base de datos
@@ -68,10 +83,6 @@ public class ProductoService {
             entity.setUnidad(unidad);
         }
         
-        return repository.save(entity);
-    }
-
-    public Optional<Producto> get(Long id) {
-        return repository.findById(id);
+        return super.update(entity);
     }
 }

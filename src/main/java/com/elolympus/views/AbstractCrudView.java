@@ -70,7 +70,7 @@ public abstract class AbstractCrudView<T extends AbstractEntity> extends Div imp
             System.out.println("ERROR al configurar binder: " + e.getMessage());
         }
         
-        createUI();
+        // NO llamar a createUI() aquí - será llamado desde initialize()
     }
     
     /**
@@ -86,10 +86,12 @@ public abstract class AbstractCrudView<T extends AbstractEntity> extends Div imp
     }
     
     /**
-     * Método para inicializar la vista después de que todos los servicios estén inyectados.
-     * Debe ser llamado desde el constructor de la subclase después de super().
+     * Método para inicializar la vista después de que todos los campos estén inicializados.
+     * Debe ser llamado desde el constructor de la subclase DESPUÉS de super() y DESPUÉS de
+     * inicializar todos los campos de la subclase.
      */
     protected void initialize() {
+        createUI();
         refreshGrid();
     }
     

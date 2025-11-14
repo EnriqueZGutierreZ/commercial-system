@@ -2,364 +2,307 @@ package com.elolympus.views.Administracion;
 
 import com.elolympus.data.Administracion.Direccion;
 import com.elolympus.data.Administracion.Persona;
+import com.elolympus.services.services.AbstractCrudService;
 import com.elolympus.services.services.DireccionService;
 import com.elolympus.services.services.PersonaService;
 import com.elolympus.services.services.UbigeoService;
+import com.elolympus.views.AbstractCrudView;
 import com.elolympus.views.MainLayout;
 import com.elolympus.views.direccion.DireccionView;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.icon.Icon;
-import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.data.binder.BeanValidationBinder;
-import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.function.SerializableBiConsumer;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.PermitAll;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
-import java.util.Optional;
 
 import java.util.List;
+import java.util.Optional;
 
 @PageTitle("Personas")
 @Route(value = "persona/:PersonaID?/:action?(edit)", layout = MainLayout.class)
 @PermitAll
-public class PersonasView extends Div implements BeforeEnterObserver{
+public class PersonasView extends AbstractCrudView<Persona> {
 
-    private final PersonaService PersonaService;
+    private final PersonaService personaService;
     private final UbigeoService ubigeoService;
     private final DireccionService direccionService;
-    private BeanValidationBinder<Persona> binder;
-    private Persona persona;
     private Direccion direccion;
 
-    public final String PERSONA_ID = "PersonaID";
-    public final String PERSONA_EDIT_ROUTE_TEMPLATE = "persona/%s/edit";
-    public Grid<Persona> gridPersonas       = new Grid<>(Persona.class,false);
-    public final TextField txtDni           = new TextField("DNI","","Busqueda por DNI");
-    public final TextField txtNombres       = new TextField("Nombres","","Busqueda por Nombres");
-    public final TextField txtApellidos     = new TextField("Apellidos","","Busqueda por Apellidos");
-    public final Button btnFiltrar          = new Button("BUSCAR",new Icon(VaadinIcon.FILTER));
-    public final Button toggleButton        = new Button("Busqueda", new Icon(VaadinIcon.FILTER));
-
-    public final HorizontalLayout tophl     = new HorizontalLayout(txtDni,txtNombres,txtApellidos,btnFiltrar);
-
-    public FormLayout formLayout = new FormLayout();
-    public TextField nombres           = new TextField("Nombres","");
-    public TextField apellidos         = new TextField("Apellidos","");
+    // Campos de formulario adicionales
+    public TextField nombres = new TextField("Nombres", "");
+    public TextField apellidos = new TextField("Apellidos", "");
     public ComboBox<String> tipo_documento = new ComboBox<>("Tipo de Documento");
-    public IntegerField num_documento     = new IntegerField("DNI","");
-    public IntegerField celular           = new IntegerField("Celular","");
-    public TextField email             = new TextField("Correo","");
-    public TextField sexo              = new TextField("Sexo","");
-    public TextField creador           = new TextField("Creador", "");
-    public TextField txtdireccion      = new TextField("Direccion", "");
+    public IntegerField num_documento = new IntegerField("DNI", "");
+    public IntegerField celular = new IntegerField("Celular", "");
+    public TextField email = new TextField("Correo", "");
+    public TextField sexo = new TextField("Sexo", "");
+    public TextField creador = new TextField("Creador", "");
+    public TextField txtdireccion = new TextField("Direccion", "");
     {
         txtdireccion.setReadOnly(true);
     }
-    private final Button btnDireccion  = new Button("Obtener Direccion");
-    private final Button cancel = new Button("Cancelar");
-    private final Button save = new Button("Guardar");
-    private final Button delete = new Button("Eliminar",VaadinIcon.TRASH.create());
-    public final SplitLayout splitLayout = new SplitLayout();
+    private final Button btnDireccion = new Button("Obtener Direccion");
+
+    // Campos de búsqueda - inicializados inline
+    private final TextField txtDni = new TextField("DNI", "", "Busqueda por DNI");
+    private final TextField txtNombres = new TextField("Nombres", "", "Busqueda por Nombres");
+    private final TextField txtApellidos = new TextField("Apellidos", "", "Busqueda por Apellidos");
 
     @Autowired
-    public PersonasView(PersonaService PersonaService, UbigeoService ubigeoService, DireccionService direccionService) {
-        this.PersonaService = PersonaService;
+    public PersonasView(PersonaService personaService, UbigeoService ubigeoService, DireccionService direccionService) {
+        super();
+        this.personaService = personaService;
         this.ubigeoService = ubigeoService;
         this.direccionService = direccionService;
-        try {
-            // Configure Form
-            binder = new BeanValidationBinder<>(Persona.class);
-            // Bind fields. This is where you'd define e.g. validation rules
-            binder.bindInstanceFields(this);
-        }catch (Exception e){
-            System.out.println("ERRORRRR: " + e.getMessage());
-        }
+        
+        // Configurar items del ComboBox ANTES de cualquier binding
+        tipo_documento.setItems("DNI", "RUC", "Carné de Extranjería", "Pasaporte");
+        tipo_documento.setPlaceholder("Seleccione tipo de documento");
+        
+        // Eventos de búsqueda
+        txtDni.addValueChangeListener(e -> applyFilter());
+        txtApellidos.addValueChangeListener(e -> applyFilter());
+        txtNombres.addValueChangeListener(e -> applyFilter());
+        btnDireccion.addClickListener(e -> getDireccion());
+        
+        initialize();
+    }
 
-        // Configurar ComboBox de tipo de documento
+    @Override
+    protected Class<Persona> getEntityClass() {
+        return Persona.class;
+    }
+
+    @Override
+    protected AbstractCrudService<Persona, ?> getService() {
+        return personaService;
+    }
+
+    @Override
+    protected String getViewClassName() {
+        return "persona-view";
+    }
+
+    @Override
+    protected Class<? extends Component> getViewClass() {
+        return PersonasView.class;
+    }
+
+    @Override
+    protected String getEntityIdParam() {
+        return "PersonaID";
+    }
+
+    @Override
+    protected String getEditRouteTemplate() {
+        return "persona/%s/edit";
+    }
+
+    @Override
+    protected String getEntityName() {
+        return "Persona";
+    }
+
+    @Override
+    protected Persona createNewEntity() {
+        return new Persona();
+    }
+
+    @Override
+    protected void configureBinder() {
+        // Configurar binding explícito para cada campo para mayor control
+        binder.forField(nombres)
+                .bind(Persona::getNombres, Persona::setNombres);
+        
+        binder.forField(apellidos)
+                .bind(Persona::getApellidos, Persona::setApellidos);
+        
+        binder.forField(num_documento)
+                .bind(Persona::getNum_documento, Persona::setNum_documento);
+        
+        binder.forField(celular)
+                .bind(Persona::getCelular, Persona::setCelular);
+        
+        binder.forField(email)
+                .bind(Persona::getEmail, Persona::setEmail);
+        
+        binder.forField(sexo)
+                .bind(Persona::getSexo, Persona::setSexo);
+        
+        binder.forField(creador)
+                .bind(Persona::getCreador, Persona::setCreador);
+        
+        // Configurar el binding personalizado del tipo_documento con converter
         configurarTipoDocumento();
-
-        addClassNames("persona-view");
-        // Create UI
-        this.createGridLayout(splitLayout);
-        this.createEditorLayout(splitLayout);
-        add(splitLayout);
-        initStyles();
-
-        //EVENTOS
-        btnFiltrar.addClickListener(e->onBtnFiltrar());
-        txtDni.addValueChangeListener(e->onBtnFiltrar());
-        txtApellidos.addValueChangeListener(e->onBtnFiltrar());
-        txtNombres.addValueChangeListener(e->onBtnFiltrar());
-        btnDireccion.addClickListener(e->getDireccion());
-        toggleButton.addClickListener(event -> {
-            boolean isVisible = tophl.isVisible();
-            tophl.setVisible(!isVisible);
-            if (isVisible) {
-                tophl.removeClassName("tophl-visible");
-            } else {
-                tophl.addClassName("tophl-visible");
-            }
-        });
-        save.addClickListener(e->onBtnSave());
-        cancel.addClickListener(e->onBtnCancel());
-        delete.addClickListener(e->onBtnDelete());
-        gridPersonas.asSingleSelect().addValueChangeListener(e->asSingleSelect(e.getValue(),this.save));
-        refreshGrid();
     }
 
-    public void initStyles(){
-        delete.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
-        cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
-        save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        splitLayout.setSizeFull();
-        toggleButton.addClassName("toggle-button");
-        tophl.addClassName("tophl");
-        tophl.setAlignItems(FlexComponent.Alignment.BASELINE);
+    @Override
+    protected void configureGrid(Grid<Persona> grid) {
+        grid.addColumn(createActivoRenderer()).setHeader("Activo").setAutoWidth(true);
+        grid.addColumn(Persona::getNum_documento).setHeader("DNI").setAutoWidth(true);
+        grid.addColumn(Persona::getNombres).setHeader("Nombres").setAutoWidth(true);
+        grid.addColumn(Persona::getApellidos).setHeader("Apellidos").setAutoWidth(true);
+        grid.addColumn(Persona::getCelular).setHeader("Celular").setAutoWidth(true);
     }
 
-    private final SerializableBiConsumer<Span, Persona> EstadoComponenteActivo = (
-            span, persona) -> {
-        String theme = String.format("badge %s",
-                persona.isActivo() ? "success" : "error");
-        span.getElement().setAttribute("theme", theme);
-        span.setText(persona.isActivo()?"Activo":"Desactivado");
-    };
-
-    private ComponentRenderer<Span, Persona> CrearComponmenteActivoRenderer() {
-        return new ComponentRenderer<>(Span::new, EstadoComponenteActivo);
-    }
-    private void createEditorLayout(SplitLayout splitLayout) {
-
-        Div editorLayoutDiv = new Div();
-        editorLayoutDiv.setHeightFull();
-        editorLayoutDiv.setClassName("editor-layout");
-        Div editorDiv = new Div();
-        editorDiv.setClassName("editor");
-        editorLayoutDiv.add(editorDiv);
+    @Override
+    protected void configureFormLayout(FormLayout formLayout) {
         HorizontalLayout direccionLayout = new HorizontalLayout(txtdireccion, btnDireccion);
         direccionLayout.setAlignItems(FlexComponent.Alignment.END);
         direccionLayout.setWidthFull();
         txtdireccion.setWidthFull();
-        formLayout.add(nombres, apellidos,
-                tipo_documento, num_documento, celular, email, sexo, creador);
+        
+        formLayout.add(nombres, apellidos, tipo_documento, num_documento, celular, email, sexo, creador);
         formLayout.add(direccionLayout);
-        editorDiv.add(formLayout);
-        createButtonLayout(editorLayoutDiv);
-        splitLayout.addToSecondary(editorLayoutDiv);
     }
 
-    private void createButtonLayout(Div editorLayoutDiv) {
-        HorizontalLayout buttonLayout = new HorizontalLayout();
-        buttonLayout.setClassName("button-layout");
-        buttonLayout.add(save, cancel,delete);
-        editorLayoutDiv.add(buttonLayout);
-    }
-    private Component createGrid() {
-        gridPersonas = new Grid<>(Persona.class, false);
-        gridPersonas.setClassName("grilla");
-        gridPersonas.setHeight("86%");
-        gridPersonas.addColumn(CrearComponmenteActivoRenderer())          .setHeader("Activo")       .setAutoWidth(true);
-        gridPersonas.addColumn(Persona::getNum_documento)   .setHeader("DNI")          .setAutoWidth(true);
-        gridPersonas.addColumn(Persona::getNombres)         .setHeader("Nombres")      .setAutoWidth(true);
-        gridPersonas.addColumn(Persona::getApellidos)       .setHeader("Apellidos")    .setAutoWidth(true);
-        gridPersonas.addColumn(Persona::getCelular)         .setHeader("Celular") .setAutoWidth(true);
-        return gridPersonas;
-    }
-    private void createGridLayout(SplitLayout splitLayout) {
-        Div wrapper = new Div();
-        wrapper.setClassName("grid-wrapper");
-        wrapper.setSizeFull();
-        splitLayout.addToPrimary(wrapper);
-        wrapper.add(toggleButton,tophl,createGrid());
+    @Override
+    protected boolean hasFilters() {
+        return true;
     }
 
-    //EVENTOS+++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    public void onBtnFiltrar() {
-        onRefresh();
+    @Override
+    protected HorizontalLayout createFilterLayout() {
+        txtDni.setPlaceholder("Busqueda por DNI");
+        txtNombres.setPlaceholder("Busqueda por Nombres");
+        txtApellidos.setPlaceholder("Busqueda por Apellidos");
+        
+        HorizontalLayout searchLayout = new HorizontalLayout(txtDni, txtNombres, txtApellidos);
+        searchLayout.setAlignItems(FlexComponent.Alignment.BASELINE);
+        return searchLayout;
     }
 
-    public void onRefresh() {
+    @Override
+    protected void setupFilterListeners() {
+        // Ya configurado en el constructor
+    }
+
+    @Override
+    protected void clearFilters() {
+        if (txtDni != null) txtDni.clear();
+        if (txtNombres != null) txtNombres.clear();
+        if (txtApellidos != null) txtApellidos.clear();
+    }
+
+    private void applyFilter() {
         String dni = txtDni.getValue();
         String apellidos = txtApellidos.getValue();
         String nombres = txtNombres.getValue();
-        List<Persona> personasActivas = PersonaService.numDocumnetoNombresApellidosActivosContainsIgnoreCase(dni,nombres,apellidos);
-        gridPersonas.setItems(personasActivas);
-        gridPersonas.getDataProvider().refreshAll();
-
+        List<Persona> personasActivas = personaService.numDocumnetoNombresApellidosActivosContainsIgnoreCase(dni, nombres, apellidos);
+        grid.setItems(personasActivas);
     }
 
-    public void onBtnSave() {
-        try {
-            // Prevenir múltiples clicks deshabilitando el botón
-            save.setEnabled(false);
-            
-            Persona personaToSave;
-            
-            if (this.persona == null) {
-                // Persona nueva
-                personaToSave = new Persona();
-            } else if (this.persona.getId() != null) {
-                // Persona existente - recargar desde la base de datos para evitar entidades detached
-                Optional<Persona> personaFromDb = PersonaService.get(this.persona.getId());
-                if (personaFromDb.isPresent()) {
-                    personaToSave = personaFromDb.get();
-                } else {
-                    // Si no se encuentra en la DB, crear nueva
-                    personaToSave = new Persona();
+    protected void customRefreshGrid() {
+        List<Persona> personasActivas = personaService.numDocumnetoNombresApellidosActivosContainsIgnoreCase("", "", "");
+        grid.setItems(personasActivas);
+    }
+
+    @Override
+    protected void beforeSave(Persona entity) {
+        // Lógica especial para guardar persona con dirección
+        if (this.direccion != null) {
+            try {
+                // Usar el método especializado del servicio
+                Persona savedPersona = personaService.savePersonaWithDireccion(entity, this.direccion, direccionService);
+                // Actualizar la referencia local
+                if (savedPersona != null && savedPersona.getId() != null) {
+                    entity.setId(savedPersona.getId());
+                    entity.setVersion(savedPersona.getVersion());
                 }
-            } else {
-                // Persona sin ID - es nueva
-                personaToSave = new Persona();
+            } catch (Exception e) {
+                throw new RuntimeException("Error al guardar persona con dirección: " + e.getMessage(), e);
             }
-            
-            // Escribir los datos del formulario a la entidad
-            binder.writeBean(personaToSave);
-            
-            // Usar el método especializado para guardar persona con dirección
-            if (this.direccion != null) {
-                try {
-                    this.persona = PersonaService.savePersonaWithDireccion(personaToSave, this.direccion, direccionService);
-                } catch (Exception e) {
-                    throw new RuntimeException("Error al guardar persona con dirección: " + e.getMessage(), e);
-                }
-            } else {
-                // Guardar persona sin dirección
-                this.persona = PersonaService.update(personaToSave);
-            }
-            clearForm();
-            refreshGrid();
-            Notification.show("Datos actualizados");
-            UI.getCurrent().navigate(PersonasView.class);
-            
-        } catch (ObjectOptimisticLockingFailureException exception) {
-            Notification n = Notification.show(
-                    "Error al actualizar los datos. Alguien más actualizó el registro mientras usted hacía cambios.");
-            n.setPosition(Notification.Position.MIDDLE);
-            n.addThemeVariants(NotificationVariant.LUMO_ERROR);
-        } catch (ValidationException validationException) {
-            Notification.show("No se pudieron actualizar los datos. Compruebe nuevamente que todos los valores sean válidos.");
-        } catch (Exception e) {
-            Notification.show("Error inesperado: " + e.getMessage(), 5000, Notification.Position.MIDDLE);
-        } finally {
-            // Rehabilitar el botón siempre
-            save.setEnabled(true);
         }
     }
 
-    public void onBtnCancel() {
-        this.clearForm();
-        this.refreshGrid();
-    }
-
-    public void onBtnDelete() {
+    @Override
+    protected void populateForm(Persona entity) {
         try {
-            // Prevenir múltiples clicks
-            delete.setEnabled(false);
+            // Llamar al método padre para el binding automático
+            super.populateForm(entity);
             
-            if (this.persona == null || this.persona.getId() == null) {
-                Notification.show("Seleccione una persona para eliminar");
-                return;
+            // Asegurar que los campos se pueblan correctamente
+            if (entity != null) {
+                // Verificar y establecer valores manualmente si el binding automático falló
+                if (nombres.getValue() == null || nombres.getValue().isEmpty()) {
+                    nombres.setValue(entity.getNombres() != null ? entity.getNombres() : "");
+                }
+                if (apellidos.getValue() == null || apellidos.getValue().isEmpty()) {
+                    apellidos.setValue(entity.getApellidos() != null ? entity.getApellidos() : "");
+                }
+                if (num_documento.getValue() == null && entity.getNum_documento() != null) {
+                    num_documento.setValue(entity.getNum_documento());
+                }
+                if (celular.getValue() == null && entity.getCelular() != null) {
+                    celular.setValue(entity.getCelular());
+                }
+                if (email.getValue() == null || email.getValue().isEmpty()) {
+                    email.setValue(entity.getEmail() != null ? entity.getEmail() : "");
+                }
+                if (sexo.getValue() == null || sexo.getValue().isEmpty()) {
+                    sexo.setValue(entity.getSexo() != null ? entity.getSexo() : "");
+                }
+                if (creador.getValue() == null || creador.getValue().isEmpty()) {
+                    creador.setValue(entity.getCreador() != null ? entity.getCreador() : "");
+                }
+                
+                // Establecer el tipo de documento manualmente si no se estableció automáticamente
+                if (tipo_documento.getValue() == null && entity.getTipo_documento() != null) {
+                    String tipoDocumentoStr = switch (entity.getTipo_documento()) {
+                        case 1 -> "DNI";
+                        case 2 -> "RUC";
+                        case 3 -> "Carné de Extranjería";
+                        case 4 -> "Pasaporte";
+                        default -> null;
+                    };
+                    if (tipoDocumentoStr != null) {
+                        tipo_documento.setValue(tipoDocumentoStr);
+                    }
+                }
             }
             
-            // Recargar la persona desde la base de datos para evitar entidades detached
-            Optional<Persona> personaFromDb = PersonaService.get(this.persona.getId());
-            if (personaFromDb.isPresent()) {
-                Persona personaToDelete = personaFromDb.get();
-                personaToDelete.setActivo(false);
-                PersonaService.update(personaToDelete);
-                clearForm();
-                refreshGrid();
-                Notification.show("Persona Eliminada");
-                UI.getCurrent().navigate(PersonasView.class);
-            } else {
-                Notification.show("La persona ya no existe en la base de datos");
-            }
-            
-        } catch (ObjectOptimisticLockingFailureException exception) {
-            Notification n = Notification.show(
-                    "Error al Eliminar. Alguien más actualizó el registro mientras usted hacía cambios.");
-            n.setPosition(Notification.Position.MIDDLE);
-            n.addThemeVariants(NotificationVariant.LUMO_ERROR);
-        } catch (Exception e) {
-            Notification.show("Error inesperado al eliminar: " + e.getMessage(), 5000, Notification.Position.MIDDLE);
-        } finally {
-            // Rehabilitar el botón
-            delete.setEnabled(true);
-        }
-    }
-
-
-    public void asSingleSelect(Persona persona, Button btnSave) {
-        if (persona != null) {
-            btnSave.setText("Actualizar");
-            
-            // Recargar la persona completa desde la base de datos para asegurar que la dirección esté cargada
-            Optional<Persona> personaCompleta = PersonaService.get(persona.getId());
-            if (personaCompleta.isPresent()) {
-                populateForm(personaCompleta.get());
-            } else {
-                populateForm(persona);
-            }
-        } else {
-            clearForm();
-            btnSave.setText("Guardar");
-        }
-    }
-
-    private void refreshGrid() {
-        gridPersonas.select(null);
-        List<Persona> personasActivas = PersonaService.numDocumnetoNombresApellidosActivosContainsIgnoreCase("","","");
-        gridPersonas.setItems(personasActivas);
-        //gridPersonas.getDataProvider().refreshAll();
-    }
-
-    private void clearForm() {
-        populateForm(null);
-        txtDni.setValue("");
-        txtApellidos.setValue("");
-        txtNombres.setValue("");
-    }
-
-    private void populateForm(Persona value) {
-        this.persona = value;
-        binder.readBean(this.persona);
-        
-        // Cargar la información de la dirección si existe
-        if (this.persona != null) {
-            if (this.persona.getDireccion() != null) {
-                this.direccion = this.persona.getDireccion();
-                txtdireccion.setValue(this.direccion.getDescripcion() + " - " + this.direccion.getReferencia());
+            // Cargar la información de la dirección si existe
+            if (entity != null && entity.getDireccion() != null) {
+                this.direccion = entity.getDireccion();
+                String direccionTexto = "";
+                if (this.direccion.getDescripcion() != null && this.direccion.getReferencia() != null) {
+                    direccionTexto = this.direccion.getDescripcion() + " - " + this.direccion.getReferencia();
+                } else if (this.direccion.getDescripcion() != null) {
+                    direccionTexto = this.direccion.getDescripcion();
+                } else if (this.direccion.getReferencia() != null) {
+                    direccionTexto = this.direccion.getReferencia();
+                }
+                txtdireccion.setValue(direccionTexto);
             } else {
                 this.direccion = null;
                 txtdireccion.setValue("");
             }
-        } else {
-            this.direccion = null;
-            txtdireccion.setValue("");
+            
+        } catch (Exception e) {
+            System.err.println("ERROR en populateForm: " + e.getMessage());
+            e.printStackTrace();
+            Notification.show("Error al cargar los datos de la persona: " + e.getMessage());
         }
+    }
+
+    protected void afterClearForm() {
+        txtDni.setValue("");
+        txtApellidos.setValue("");
+        txtNombres.setValue("");
+        this.direccion = null;
+        txtdireccion.setValue("");
     }
 
     private void getDireccion() {
@@ -378,7 +321,7 @@ public class PersonasView extends Div implements BeforeEnterObserver{
                 try {
                     // SIEMPRE recargar la dirección desde BD para garantizar que esté gestionada
                     if (direccionGuardada.getId() != null) {
-                        Optional<Direccion> direccionFromDb = direccionService.findById(direccionGuardada.getId());
+                        Optional<Direccion> direccionFromDb = direccionService.get(direccionGuardada.getId());
                         if (direccionFromDb.isPresent()) {
                             // Usar la versión gestionada desde BD
                             this.direccion = direccionFromDb.get();
@@ -419,30 +362,7 @@ public class PersonasView extends Div implements BeforeEnterObserver{
         direccionView.open();
     }
 
-    @Override
-    public void beforeEnter(BeforeEnterEvent event) {
-        Optional<Long> PersonaId = event.getRouteParameters().get(this.PERSONA_ID).map(Long::parseLong);
-        if (PersonaId.isPresent()) {
-            Optional<Persona> samplePersonFromBackend = PersonaService.get(PersonaId.get());
-            if (samplePersonFromBackend.isPresent()) {
-                populateForm(samplePersonFromBackend.get());
-            } else {
-                Notification.show(
-                        String.format("The requested samplePerson was not found, ID = %s", PersonaId.get()), 3000,
-                        Notification.Position.BOTTOM_START);
-                // when a row is selected but the data is no longer available,
-                // refresh grid
-                refreshGrid();
-                event.forwardTo(PersonasView.class);
-            }
-        }
-    }
-
     private void configurarTipoDocumento() {
-        // Configurar opciones del ComboBox
-        tipo_documento.setItems("DNI", "RUC", "Carné de Extranjería", "Pasaporte");
-        tipo_documento.setPlaceholder("Seleccione tipo de documento");
-        
         // Configurar el binding para convertir String a Integer y viceversa
         binder.forField(tipo_documento)
                 .withConverter(
@@ -471,6 +391,18 @@ public class PersonasView extends Div implements BeforeEnterObserver{
                     "Seleccione un tipo de documento válido"
                 )
                 .bind(Persona::getTipo_documento, Persona::setTipo_documento);
+    }
+
+    private final SerializableBiConsumer<Span, Persona> EstadoComponenteActivo = (
+            span, persona) -> {
+        String theme = String.format("badge %s",
+                persona.isActivo() ? "success" : "error");
+        span.getElement().setAttribute("theme", theme);
+        span.setText(persona.isActivo() ? "Activo" : "Desactivado");
+    };
+
+    private ComponentRenderer<Span, Persona> CrearComponmenteActivoRenderer() {
+        return new ComponentRenderer<>(Span::new, EstadoComponenteActivo);
     }
 }
 

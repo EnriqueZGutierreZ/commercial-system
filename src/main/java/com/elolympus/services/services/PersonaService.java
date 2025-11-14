@@ -3,10 +3,7 @@ package com.elolympus.services.services;
 import com.elolympus.data.Administracion.Direccion;
 import com.elolympus.data.Administracion.Persona;
 import com.elolympus.services.repository.PersonaRepository;
-
 import com.elolympus.services.specifications.PersonaSpecifications;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,28 +12,52 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class PersonaService {
+public class PersonaService extends AbstractCrudService<Persona, PersonaRepository> {
 
-    private final PersonaRepository repository;
+    protected final PersonaRepository repository;
+
     public PersonaService(PersonaRepository repository) {
         this.repository = repository;
     }
-    public Page<Persona> list(Pageable pageable) {
-        return repository.findAll(pageable);
+
+    @Override
+    protected PersonaRepository getRepository() {
+        return repository;
     }
-    public Page<Persona> list(Pageable pageable, Specification<Persona> filter) {
-        return repository.findAll(filter,pageable);
+
+    @Override
+    protected String getTableName() {
+        return "persona";
     }
-    public int count() {
-        return (int) repository.count();
+
+    @Override
+    protected String getEntityName() {
+        return "Persona";
     }
+
+    @Override
+    protected void copyEditableFields(Persona source, Persona target) {
+        target.setTipo_documento(source.getTipo_documento());
+        target.setNum_documento(source.getNum_documento());
+        target.setNombres(source.getNombres());
+        target.setApellidos(source.getApellidos());
+        target.setCelular(source.getCelular());
+        target.setEmail(source.getEmail());
+        target.setSexo(source.getSexo());
+        target.setDireccion(source.getDireccion());
+    }
+
+    // Sobrescribir get() para forzar carga de dirección
+    @Override
     @Transactional(readOnly = true)
-    public List<Persona> findAll() {
-        return repository.findAll();
-    }
-    @Transactional
-    public Persona update(Persona entity) {
-        return repository.save(entity);
+    public Optional<Persona> get(Long id) {
+        Optional<Persona> persona = repository.findById(id);
+        // Forzar la carga de la dirección si existe
+        if (persona.isPresent() && persona.get().getDireccion() != null) {
+            // Acceder a la dirección para forzar su carga
+            persona.get().getDireccion().getDescripcion();
+        }
+        return persona;
     }
 
     @Transactional
@@ -46,7 +67,7 @@ public class PersonaService {
         
         if (direccion.getId() != null) {
             // Si la dirección existe, recargarla desde BD
-            Optional<Direccion> direccionExistente = direccionService.findById(direccion.getId());
+            Optional<Direccion> direccionExistente = direccionService.get(direccion.getId());
             if (direccionExistente.isPresent()) {
                 direccionGuardada = direccionExistente.get();
                 // Actualizar los campos
@@ -79,17 +100,7 @@ public class PersonaService {
         return repository.save(persona);
     }
 
-    @Transactional(readOnly = true)
-    public Optional<Persona> get(Long id) {
-        Optional<Persona> persona = repository.findById(id);
-        // Forzar la carga de la dirección si existe
-        if (persona.isPresent() && persona.get().getDireccion() != null) {
-            // Acceder a la dirección para forzar su carga
-            persona.get().getDireccion().getDescripcion();
-        }
-        return persona;
-    }
-
+    // Métodos de búsqueda personalizados
     public List<Persona> buscarPorNombresYApellidosActivos(String nombres, String apellidos) {
         return repository.findAll(PersonaSpecifications.nombresApellidosContainsIgnoreCase(nombres, apellidos));
     }
@@ -102,9 +113,8 @@ public class PersonaService {
         return repository.findAll();
     }
 
-    public List<Persona> numDocumnetoNombresApellidosActivosContainsIgnoreCase(String num_documento, String nombres, String apellidos){
-        Specification<Persona> spec = PersonaSpecifications.numDocumnetoNombresApellidosActivosContainsIgnoreCase(num_documento,nombres,apellidos);
+    public List<Persona> numDocumnetoNombresApellidosActivosContainsIgnoreCase(String num_documento, String nombres, String apellidos) {
+        Specification<Persona> spec = PersonaSpecifications.numDocumnetoNombresApellidosActivosContainsIgnoreCase(num_documento, nombres, apellidos);
         return repository.findAll(spec);
     }
-
 }

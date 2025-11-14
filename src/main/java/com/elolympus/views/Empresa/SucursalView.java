@@ -2,174 +2,168 @@ package com.elolympus.views.Empresa;
 
 import com.elolympus.data.Empresa.Empresa;
 import com.elolympus.data.Empresa.Sucursal;
+import com.elolympus.services.services.AbstractCrudService;
 import com.elolympus.services.services.EmpresaService;
 import com.elolympus.services.services.SucursalService;
+import com.elolympus.views.AbstractCrudView;
 import com.elolympus.views.MainLayout;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.notification.NotificationVariant;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.PermitAll;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 @PageTitle("Sucursal")
 @Route(value = "sucursal/:SucursalID?/:action?(edit)", layout = MainLayout.class)
 @PermitAll
-public class SucursalView extends Div {
+public class SucursalView extends AbstractCrudView<Sucursal> {
 
     private final SucursalService sucursalService;
     private final EmpresaService empresaService;
-    private Sucursal sucursal;
-    private BeanValidationBinder<Sucursal> binder;
 
-    //Componentes UI
-    private final Grid<Sucursal> gridsucursal = new Grid<>(Sucursal.class, false);
-    private final Checkbox principal = new Checkbox("Principal");
-    private final IntegerField codigo = new IntegerField("Código");
-    private final TextField descripcion = new TextField("Descripción");
-    private final ComboBox<Empresa> empresaComboBox = new ComboBox<>("Empresa");
-    private final IntegerField serie = new IntegerField("Serie");
-
-    private final Button save = new Button("Guardar");
-    private final Button cancel = new Button("Cancelar");
-    private final Button delete = new Button("Eliminar");
-
-    private final FormLayout formLayout = new FormLayout();
+    // Form fields
+    private Checkbox principal;
+    private IntegerField codigo;
+    private TextField descripcion;
+    private ComboBox<Empresa> empresaComboBox;
+    private IntegerField serie;
 
     public SucursalView(SucursalService sucursalService, EmpresaService empresaService) {
+        super();
         this.sucursalService = sucursalService;
         this.empresaService = empresaService;
-        try{
-            binder = new BeanValidationBinder<>(Sucursal.class);
-            binder.bindInstanceFields(this);
-        }catch (Exception e){
-            System.out.println("ERRORRR: " +e.getMessage());
-        }
-        addClassName("sucursal-view");
-        setSizeFull();
-        setupGrid();
-        SplitLayout layout = new SplitLayout(createGridLayout(), createEditorLayout());
-        layout.setSizeFull();
-        add(layout);
-        refreshGrid();
+        initialize();
     }
 
-    private void setupGrid() {
-        gridsucursal.addClassName("sucursal-grid");
-        gridsucursal.setSizeFull();
-        gridsucursal.setColumns("principal", "codigo", "descripcion", "serie");
-        gridsucursal.addColumn(sucursal -> sucursal.getEmpresa() != null ? sucursal.getEmpresa().getCommercialName() : "").setHeader("Empresa");
-        gridsucursal.asSingleSelect().addValueChangeListener(evt -> editSucursal(evt.getValue()));
+    @Override
+    protected Class<Sucursal> getEntityClass() {
+        return Sucursal.class;
     }
 
-    private Component createEditorLayout(){
-        Div editorDiv = new Div();
-        editorDiv.setHeightFull();
-        editorDiv.setClassName("editor-layout");
-        Div div = new Div();
-        div.setClassName("editor");
-        editorDiv.add(div);
-        empresaComboBox.setItems(empresaService.findAll());
+    @Override
+    protected AbstractCrudService<Sucursal, ?> getService() {
+        return sucursalService;
+    }
+
+    @Override
+    protected String getViewClassName() {
+        return "sucursal-view";
+    }
+
+    @Override
+    protected Class<? extends Component> getViewClass() {
+        return SucursalView.class;
+    }
+
+    @Override
+    protected String getEntityIdParam() {
+        return "SucursalID";
+    }
+
+    @Override
+    protected String getEditRouteTemplate() {
+        return "sucursal/%s/edit";
+    }
+
+    @Override
+    protected String getEntityName() {
+        return "Sucursal";
+    }
+
+    @Override
+    protected Sucursal createNewEntity() {
+        return new Sucursal();
+    }
+
+    @Override
+    protected void configureBinder() {
+        // El binder ya está inicializado en la clase base
+    }
+
+    @Override
+    protected void configureGrid(Grid<Sucursal> grid) {
+        // Agregar columna de estado activo
+        grid.addColumn(createActivoRenderer())
+                .setHeader("Activo")
+                .setAutoWidth(true)
+                .setFlexGrow(0);
+
+        grid.addColumn(sucursal -> sucursal.isPrincipal() ? "Sí" : "No")
+                .setHeader("Principal")
+                .setAutoWidth(true)
+                .setFlexGrow(0);
+        grid.addColumn(Sucursal::getCodigo)
+                .setHeader("Código")
+                .setAutoWidth(true)
+                .setFlexGrow(0);
+        grid.addColumn(Sucursal::getDescripcion)
+                .setHeader("Descripción")
+                .setAutoWidth(true)
+                .setFlexGrow(1);
+        grid.addColumn(sucursal -> sucursal.getEmpresa() != null ? sucursal.getEmpresa().getCommercialName() : "")
+                .setHeader("Empresa")
+                .setAutoWidth(true)
+                .setFlexGrow(1);
+        grid.addColumn(Sucursal::getSerie)
+                .setHeader("Serie")
+                .setAutoWidth(true)
+                .setFlexGrow(0);
+    }
+
+    @Override
+    protected void configureFormLayout(FormLayout formLayout) {
+        principal = new Checkbox("Principal");
+        codigo = new IntegerField("Código");
+        descripcion = new TextField("Descripción");
+        empresaComboBox = new ComboBox<>("Empresa");
+        serie = new IntegerField("Serie");
+
+        // La configuración del ComboBox se hará en initialize()
         empresaComboBox.setItemLabelGenerator(Empresa::getCommercialName);
+
+        binder.forField(principal).bind(Sucursal::isPrincipal, Sucursal::setPrincipal);
+        binder.forField(codigo).bind(Sucursal::getCodigo, Sucursal::setCodigo);
+        binder.forField(descripcion).bind(Sucursal::getDescripcion, Sucursal::setDescripcion);
+        binder.forField(empresaComboBox).bind(Sucursal::getEmpresa, Sucursal::setEmpresa);
+        binder.forField(serie).bind(Sucursal::getSerie, Sucursal::setSerie);
+
         formLayout.add(principal, codigo, descripcion, empresaComboBox, serie);
-        save.addClickListener(event -> save());
-        cancel.addClickListener(event -> clearForm());
-        delete.addClickListener(event -> delete());
-
-        delete.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
-        cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
-        save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        div.add(formLayout);
-        createButtonsLayout(editorDiv);
-        return editorDiv;
     }
 
-    private void createButtonsLayout(Div div) {
-        HorizontalLayout buttonLayout = new HorizontalLayout();
-        buttonLayout.setClassName("button-layout");
-        buttonLayout.add(save, cancel, delete);
-        div.add(buttonLayout);
-    }
-
-    private Component createGridLayout() {
-        HorizontalLayout busquedaDiv = new HorizontalLayout();
-        busquedaDiv.addClassName("tophl");
-        Div gridContainer = new Div();
-        gridContainer.addClassName("grid-wrapper");
-        gridContainer.add(busquedaDiv,gridsucursal);
-        gridContainer.setSizeFull();
-        return gridContainer;
-    }
-
-    private void refreshGrid() {
-        gridsucursal.setItems(sucursalService.findAll());
-    }
-
-    private void save(){
-        try{
-            if(sucursal==null){
-                sucursal = new Sucursal();
-            }
-            sucursal.setEmpresa(empresaComboBox.getValue());
-            if(binder.writeBeanIfValid(sucursal)){
-                sucursalService.update(sucursal);
-                clearForm();
-                refreshGrid();
-                Notification.show("Sucursal guardada correctamente");
-            }else {
-                Notification.show("Error al guardar la sucursal");
-            }
-            clearForm();
-            refreshGrid();
-            UI.getCurrent().navigate(SucursalView.class);
-        }catch (ObjectOptimisticLockingFailureException exception) {
-            Notification n = Notification.show(
-                    "Error al actualizar los datos. Alguien más actualizó el registro mientras usted hacía cambios.");
-            n.setPosition(Notification.Position.MIDDLE);
-            n.addThemeVariants(NotificationVariant.LUMO_ERROR);
+    @Override
+    protected void initialize() {
+        // Primero llamar al método padre para crear todos los campos
+        super.initialize();
+        
+        // Después configurar los items del ComboBox cuando ya está creado
+        if (empresaComboBox != null) {
+            empresaComboBox.setItems(empresaService.findAll());
         }
     }
 
-    private void delete(){
-        if(sucursal!=null){
-            sucursalService.delete(sucursal);
-            clearForm();
-            refreshGrid();
-            Notification.show("Sucursal eliminada correctamente");
-        }else{
-            Notification.show("Seleccione una sucursal para eliminar");
+    @Override
+    protected boolean hasFilters() {
+        return false;
+    }
+
+    @Override
+    protected void beforeSave(Sucursal entity) {
+        // Asegurar que la empresa esté establecida
+        if (empresaComboBox.getValue() != null) {
+            entity.setEmpresa(empresaComboBox.getValue());
         }
     }
 
-    private void clearForm(){
-        sucursal= new Sucursal();
-        binder.readBean(sucursal);
-        empresaComboBox.clear();
-        save.setText("Guardar");
-    }
-
-    private void editSucursal(Sucursal sucursal){
-        if(sucursal==null){
-            clearForm();
-        }else{
-            this.sucursal=sucursal;
-            binder.readBean(sucursal);
-            empresaComboBox.setValue(sucursal.getEmpresa());
-            save.setText("Actualizar");
+    @Override
+    protected void clearFilters() {
+        // No hay filtros que limpiar
+        if (empresaComboBox != null) {
+            empresaComboBox.clear();
         }
     }
 }

@@ -1,168 +1,152 @@
 package com.elolympus.views.Empresa;
 
 import com.elolympus.data.Empresa.Empresa;
+import com.elolympus.services.services.AbstractCrudService;
 import com.elolympus.services.services.EmpresaService;
+import com.elolympus.views.AbstractCrudView;
 import com.elolympus.views.MainLayout;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.notification.NotificationVariant;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.PermitAll;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 @PageTitle("Empresa")
 @Route(value = "empresa/:EmpresaID?/:action?(edit)", layout = MainLayout.class)
 @PermitAll
-public class EmpresaView extends Div {
+public class EmpresaView extends AbstractCrudView<Empresa> {
 
     private final EmpresaService empresaService;
-    private Empresa empresa;
-    private BeanValidationBinder<Empresa> binder;
 
-    //Componentes UI
-    private final Grid<Empresa> gridempresa = new Grid<>(Empresa.class, false);
-    private final IntegerField direccion = new IntegerField("Direccion");
-    private final TextField folderTemps = new TextField("Informes de carpeta");
-    private final TextField folderReports = new TextField("Informes de carpeta");
-    private final Checkbox allowBuyWithoutStock = new Checkbox("Permitir comprar sin stock");
-    private final Checkbox requireSalesPin = new Checkbox("Requerir pin de ventas");
-    private final IntegerField documentoTipoXdefecto = new IntegerField("Documento Tipo Xdefecto");
-    private final TextField logoEnterprise = new TextField("Logotipo Empresa");
-    private final TextField logoWidth = new TextField("Ancho del logotipo");
-    private final TextField commercialName = new TextField("Nombre comercial");
-
-    private final Button save = new Button("Guardar");
-    private final Button cancel = new Button("Cancelar");
-    private final Button delete = new Button("Eliminar");
-
-    private final FormLayout formLayout = new FormLayout();
+    // Form fields
+    private IntegerField direccion;
+    private TextField folderTemps;
+    private TextField folderReports;
+    private Checkbox allowBuyWithoutStock;
+    private Checkbox requireSalesPin;
+    private IntegerField documentoTipoXdefecto;
+    private TextField logoEnterprise;
+    private TextField logoWidth;
+    private TextField commercialName;
 
     public EmpresaView(EmpresaService empresaService) {
+        super();
         this.empresaService = empresaService;
-        try{
-            binder = new BeanValidationBinder<>(Empresa.class);
-            binder.bindInstanceFields(this);
-        }catch (Exception e){
-            System.out.println("ERRORRR: " +e.getMessage());
-        }
-        addClassName("empresa-view");
-        setSizeFull();
-        setupGrid();
-        SplitLayout layout = new SplitLayout(createGridLayout(), createEditorLayout());
-        layout.setSizeFull();
-        add(layout);
-        refreshGrid();
+        initialize();
     }
 
-    private void setupGrid() {
-        gridempresa.addClassName("empresa-grid");
-        gridempresa.setSizeFull();
-        gridempresa.setColumns("commercialName", "folderTemps", "folderReports", "allowBuyWithoutStock", "requireSalesPin", "documentoTipoXdefecto", "logoEnterprise", "logoWidth");
-        gridempresa.asSingleSelect().addValueChangeListener(evt -> editEmpresa(evt.getValue()));
+    @Override
+    protected Class<Empresa> getEntityClass() {
+        return Empresa.class;
     }
 
-    private Component createEditorLayout(){
-        Div editorDiv = new Div();
-        editorDiv.setHeightFull();
-        editorDiv.setClassName("editor-layout");
-        Div div = new Div();
-        div.setClassName("editor");
-        editorDiv.add(div);
-        formLayout.add(direccion, folderTemps, folderReports, allowBuyWithoutStock, requireSalesPin, documentoTipoXdefecto, logoEnterprise, logoWidth, commercialName);
-        save.addClickListener(event -> save());
-        cancel.addClickListener(event -> clearForm());
-        delete.addClickListener(event -> delete());
-
-        delete.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
-        cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
-        save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        div.add(formLayout);
-        createButtonsLayout(editorDiv);
-        return editorDiv;
+    @Override
+    protected AbstractCrudService<Empresa, ?> getService() {
+        return empresaService;
     }
 
-    private void createButtonsLayout(Div div) {
-        HorizontalLayout buttonLayout = new HorizontalLayout();
-        buttonLayout.setClassName("button-layout");
-        buttonLayout.add(save, cancel, delete);
-        div.add(buttonLayout);
+    @Override
+    protected String getViewClassName() {
+        return "empresa-view";
     }
 
-    private Component createGridLayout() {
-        HorizontalLayout busquedaDiv = new HorizontalLayout();
-        busquedaDiv.addClassName("tophl");
-        Div gridContainer = new Div();
-        gridContainer.addClassName("grid-wrapper");
-        gridContainer.add(busquedaDiv,gridempresa);
-        gridContainer.setSizeFull();
-        return gridContainer;
+    @Override
+    protected Class<? extends Component> getViewClass() {
+        return EmpresaView.class;
     }
 
-    private void refreshGrid() {
-        gridempresa.setItems(empresaService.findAll());
+    @Override
+    protected String getEntityIdParam() {
+        return "EmpresaID";
     }
 
-    private void save(){
-        try{
-            if(empresa==null){
-                empresa = new Empresa();
-            }
-            if(binder.writeBeanIfValid(empresa)){
-                empresaService.update(empresa);
-                clearForm();
-                refreshGrid();
-                Notification.show("Empresa guardada correctamente");
-            }else {
-                Notification.show("Error al guardar la empresa");
-            }
-            clearForm();
-            refreshGrid();
-            UI.getCurrent().navigate(EmpresaView.class);
-        }catch (ObjectOptimisticLockingFailureException exception) {
-            Notification n = Notification.show(
-                    "Error al actualizar los datos. Alguien más actualizó el registro mientras usted hacía cambios.");
-            n.setPosition(Notification.Position.MIDDLE);
-            n.addThemeVariants(NotificationVariant.LUMO_ERROR);
-        }
+    @Override
+    protected String getEditRouteTemplate() {
+        return "empresa/%s/edit";
     }
 
-    private void delete(){
-        if(empresa!=null){
-            empresaService.delete(empresa);
-            clearForm();
-            refreshGrid();
-            Notification.show("Empresa eliminada correctamente");
-        }else{
-            Notification.show("Seleccione una empresa para eliminar");
-        }
+    @Override
+    protected String getEntityName() {
+        return "Empresa";
     }
 
-    private void clearForm(){
-        empresa= new Empresa();
-        binder.readBean(empresa);
-        save.setText("Guardar");
+    @Override
+    protected Empresa createNewEntity() {
+        return new Empresa();
     }
 
-    private void editEmpresa(Empresa empresa){
-        if(empresa==null){
-            clearForm();
-        }else{
-            this.empresa=empresa;
-            binder.readBean(empresa);
-            save.setText("Actualizar");
-        }
+    @Override
+    protected void configureBinder() {
+        // El binder ya está inicializado en la clase base
+    }
+
+    @Override
+    protected void configureGrid(Grid<Empresa> grid) {
+        // Agregar columna de estado activo
+        grid.addColumn(createActivoRenderer())
+                .setHeader("Activo")
+                .setAutoWidth(true)
+                .setFlexGrow(0);
+
+        grid.addColumn(Empresa::getCommercialName)
+                .setHeader("Nombre Comercial")
+                .setAutoWidth(true)
+                .setFlexGrow(1);
+        grid.addColumn(Empresa::getFolderTemps)
+                .setHeader("Carpeta Temporal")
+                .setAutoWidth(true)
+                .setFlexGrow(1);
+        grid.addColumn(Empresa::getFolderReports)
+                .setHeader("Carpeta Reportes")
+                .setAutoWidth(true)
+                .setFlexGrow(1);
+        grid.addColumn(empresa -> empresa.getAllowBuyWithoutStock() ? "Sí" : "No")
+                .setHeader("Permitir Compra Sin Stock")
+                .setAutoWidth(true)
+                .setFlexGrow(0);
+        grid.addColumn(empresa -> empresa.getRequireSalesPin() ? "Sí" : "No")
+                .setHeader("Requiere PIN Ventas")
+                .setAutoWidth(true)
+                .setFlexGrow(0);
+    }
+
+    @Override
+    protected void configureFormLayout(FormLayout formLayout) {
+        direccion = new IntegerField("Dirección");
+        folderTemps = new TextField("Carpeta Temporal");
+        folderReports = new TextField("Carpeta Reportes");
+        allowBuyWithoutStock = new Checkbox("Permitir Compra Sin Stock");
+        requireSalesPin = new Checkbox("Requiere PIN Ventas");
+        documentoTipoXdefecto = new IntegerField("Tipo Documento por Defecto");
+        logoEnterprise = new TextField("Logo Empresa");
+        logoWidth = new TextField("Ancho del Logo");
+        commercialName = new TextField("Nombre Comercial");
+
+        binder.forField(direccion).bind(Empresa::getDireccion, Empresa::setDireccion);
+        binder.forField(folderTemps).bind(Empresa::getFolderTemps, Empresa::setFolderTemps);
+        binder.forField(folderReports).bind(Empresa::getFolderReports, Empresa::setFolderReports);
+        binder.forField(allowBuyWithoutStock).bind(Empresa::getAllowBuyWithoutStock, Empresa::setAllowBuyWithoutStock);
+        binder.forField(requireSalesPin).bind(Empresa::getRequireSalesPin, Empresa::setRequireSalesPin);
+        binder.forField(documentoTipoXdefecto).bind(Empresa::getDocumentoTipoXdefecto, Empresa::setDocumentoTipoXdefecto);
+        binder.forField(logoEnterprise).bind(Empresa::getLogoEnterprise, Empresa::setLogoEnterprise);
+        binder.forField(logoWidth).bind(Empresa::getLogoWidth, Empresa::setLogoWidth);
+        binder.forField(commercialName).bind(Empresa::getCommercialName, Empresa::setCommercialName);
+
+        formLayout.add(direccion, folderTemps, folderReports, allowBuyWithoutStock, 
+                      requireSalesPin, documentoTipoXdefecto, logoEnterprise, logoWidth, commercialName);
+    }
+
+    @Override
+    protected boolean hasFilters() {
+        return false;
+    }
+
+    @Override
+    protected void clearFilters() {
+        // No hay filtros que limpiar
     }
 }
