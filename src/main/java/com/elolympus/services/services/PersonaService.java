@@ -4,9 +4,12 @@ import com.elolympus.data.Administracion.Direccion;
 import com.elolympus.data.Administracion.Persona;
 import com.elolympus.services.repository.PersonaRepository;
 import com.elolympus.services.specifications.PersonaSpecifications;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,6 +18,9 @@ import java.util.Optional;
 public class PersonaService extends AbstractCrudService<Persona, PersonaRepository> {
 
     protected final PersonaRepository repository;
+    
+    @PersistenceContext
+    private EntityManager entityManager;
 
     public PersonaService(PersonaRepository repository) {
         this.repository = repository;
@@ -47,17 +53,57 @@ public class PersonaService extends AbstractCrudService<Persona, PersonaReposito
         target.setDireccion(source.getDireccion());
     }
 
-    // Sobrescribir get() para forzar carga de dirección
+    // Sobrescribir get() para usar fetch join y evitar LazyInitializationException
     @Override
     @Transactional(readOnly = true)
     public Optional<Persona> get(Long id) {
-        Optional<Persona> persona = repository.findById(id);
-        // Forzar la carga de la dirección si existe
-        if (persona.isPresent() && persona.get().getDireccion() != null) {
-            // Acceder a la dirección para forzar su carga
-            persona.get().getDireccion().getDescripcion();
+        try {
+            // Primero intentar con repository
+            Optional<Persona> persona = repository.findByIdWithDireccion(id);
+            
+            if (persona.isPresent()) {
+                Persona p = persona.get();
+                
+                if (p.getDireccion() != null) {
+                    try {
+                        // Verificar que la dirección esté realmente cargada
+                        p.getDireccion().getDescripcion();
+                        return persona; // Todo bien, devolver
+                    } catch (Exception e) {
+                        // Usar EntityManager como fallback
+                        return getPersonaWithDireccionUsingEM(id);
+                    }
+                } else {
+                    return persona;
+                }
+            } else {
+                return Optional.empty();
+            }
+            
+        } catch (Exception e) {
+            return getPersonaWithDireccionUsingEM(id);
         }
-        return persona;
+    }
+    
+    // Método alternativo usando EntityManager directo
+    @Transactional(readOnly = true)
+    public Optional<Persona> getPersonaWithDireccionUsingEM(Long id) {
+        try {
+            String jpql = "SELECT p FROM Persona p LEFT JOIN FETCH p.direccion WHERE p.id = :id";
+            List<Persona> results = entityManager.createQuery(jpql, Persona.class)
+                    .setParameter("id", id)
+                    .getResultList();
+            
+            if (!results.isEmpty()) {
+                Persona persona = results.get(0);
+                return Optional.of(persona);
+            } else {
+                return Optional.empty();
+            }
+            
+        } catch (Exception e) {
+            return Optional.empty();
+        }
     }
 
     @Transactional
@@ -114,7 +160,13 @@ public class PersonaService extends AbstractCrudService<Persona, PersonaReposito
     }
 
     public List<Persona> numDocumnetoNombresApellidosActivosContainsIgnoreCase(String num_documento, String nombres, String apellidos) {
-        Specification<Persona> spec = PersonaSpecifications.numDocumnetoNombresApellidosActivosContainsIgnoreCase(num_documento, nombres, apellidos);
-        return repository.findAll(spec);
+        // Usar el método con fetch join para evitar LazyInitializationException
+        return repository.findWithFiltersAndDireccion(num_documento, nombres, apellidos);
+    }
+    
+    // Método para obtener todas las personas activas con dirección cargada
+    @Transactional(readOnly = true)
+    public List<Persona> findAllActivosWithDireccion() {
+        return repository.findAllActivosWithDireccion();
     }
 }

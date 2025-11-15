@@ -209,7 +209,7 @@ public class PersonasView extends AbstractCrudView<Persona> {
     }
 
     protected void customRefreshGrid() {
-        List<Persona> personasActivas = personaService.numDocumnetoNombresApellidosActivosContainsIgnoreCase("", "", "");
+        List<Persona> personasActivas = personaService.findAllActivosWithDireccion();
         grid.setItems(personasActivas);
     }
 
@@ -234,6 +234,7 @@ public class PersonasView extends AbstractCrudView<Persona> {
     @Override
     protected void populateForm(Persona entity) {
         try {
+            
             // Llamar al método padre para el binding automático
             super.populateForm(entity);
             
@@ -279,16 +280,28 @@ public class PersonasView extends AbstractCrudView<Persona> {
             
             // Cargar la información de la dirección si existe
             if (entity != null && entity.getDireccion() != null) {
-                this.direccion = entity.getDireccion();
-                String direccionTexto = "";
-                if (this.direccion.getDescripcion() != null && this.direccion.getReferencia() != null) {
-                    direccionTexto = this.direccion.getDescripcion() + " - " + this.direccion.getReferencia();
-                } else if (this.direccion.getDescripcion() != null) {
-                    direccionTexto = this.direccion.getDescripcion();
-                } else if (this.direccion.getReferencia() != null) {
-                    direccionTexto = this.direccion.getReferencia();
+                this.direccion = cargarDireccionSegura(entity.getDireccion());
+                
+                if (this.direccion != null) {
+                    // Construir el texto de la dirección
+                    String direccionTexto = "";
+                    String descripcion = this.direccion.getDescripcion();
+                    String referencia = this.direccion.getReferencia();
+                    
+                    if (descripcion != null && referencia != null) {
+                        direccionTexto = descripcion + " - " + referencia;
+                    } else if (descripcion != null) {
+                        direccionTexto = descripcion;
+                    } else if (referencia != null) {
+                        direccionTexto = referencia;
+                    } else {
+                        direccionTexto = "Dirección ID: " + this.direccion.getId();
+                    }
+                    
+                    txtdireccion.setValue(direccionTexto);
+                } else {
+                    txtdireccion.setValue("");
                 }
-                txtdireccion.setValue(direccionTexto);
             } else {
                 this.direccion = null;
                 txtdireccion.setValue("");
@@ -395,6 +408,34 @@ public class PersonasView extends AbstractCrudView<Persona> {
                     "Seleccione un tipo de documento válido"
                 )
                 .bind(Persona::getTipo_documento, Persona::setTipo_documento);
+    }
+
+    /**
+     * Carga la dirección de forma segura, manejando LazyInitializationException
+     */
+    private Direccion cargarDireccionSegura(Direccion direccionProxy) {
+        if (direccionProxy == null) {
+            return null;
+        }
+        
+        try {
+            // Intentar acceder a un campo para verificar si está cargada
+            direccionProxy.getDescripcion();
+            return direccionProxy; // Ya está cargada, devolver tal como está
+            
+        } catch (Exception e) {
+            // Si es un proxy lazy, cargar desde BD
+            if (direccionProxy.getId() != null) {
+                Optional<Direccion> direccionFromDb = direccionService.get(direccionProxy.getId());
+                if (direccionFromDb.isPresent()) {
+                    return direccionFromDb.get();
+                } else {
+                    return null;
+                }
+            } else {
+                return null;
+            }
+        }
     }
 
     private final SerializableBiConsumer<Span, Persona> EstadoComponenteActivo = (

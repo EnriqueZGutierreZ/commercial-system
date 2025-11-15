@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface PersonaRepository extends
@@ -28,6 +29,10 @@ public interface PersonaRepository extends
         @Param("apellidos") String apellidos
     );
     
+    // Query para encontrar por ID con dirección cargada
+    @Query("SELECT p FROM Persona p LEFT JOIN FETCH p.direccion WHERE p.id = :id")
+    Optional<Persona> findByIdWithDireccion(@Param("id") Long id);
+    
     // Query optimizada para evitar N+1 cuando se necesita cargar direcciones
     @Query("SELECT p FROM Persona p " +
            "LEFT JOIN FETCH p.direccion d " +
@@ -41,4 +46,8 @@ public interface PersonaRepository extends
         @Param("nombres") String nombres,
         @Param("apellidos") String apellidos
     );
+    
+    // Query para encontrar todas las personas activas con dirección (sin filtros)
+    @Query("SELECT p FROM Persona p LEFT JOIN FETCH p.direccion WHERE p.activo = true")
+    List<Persona> findAllActivosWithDireccion();
 }

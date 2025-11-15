@@ -16,7 +16,8 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.splitlayout.SplitLayout;
+import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.ValidationException;
@@ -52,9 +53,10 @@ public abstract class AbstractCrudView<T extends AbstractEntity> extends Div imp
     protected final Button toggleButton = new Button("Búsqueda", new Icon(VaadinIcon.FILTER));
     
     // Layouts
-    protected final SplitLayout splitLayout = new SplitLayout();
+    protected final Dialog formDialog = new Dialog();
     protected final FormLayout formLayout = new FormLayout();
     protected HorizontalLayout tophl;
+    protected final Button addButton = new Button("Agregar", VaadinIcon.PLUS.create());
     
     /**
      * Constructor que inicializa la vista CRUD
@@ -73,9 +75,8 @@ public abstract class AbstractCrudView<T extends AbstractEntity> extends Div imp
      * Crea la interfaz de usuario completa
      */
     protected void createUI() {
-        createGridLayout(splitLayout);
-        createEditorLayout(splitLayout);
-        add(splitLayout);
+        createMainLayout();
+        createFormDialog();
         initStyles();
         setupEventListeners();
         // No llamar a refreshGrid() aquí - se llamará después desde la subclase
@@ -98,9 +99,16 @@ public abstract class AbstractCrudView<T extends AbstractEntity> extends Div imp
         delete.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
         cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        splitLayout.setSizeFull();
-        splitLayout.setSplitterPosition(70);
+        addButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        
         toggleButton.addClassName("toggle-button");
+        
+        // Configurar el dialog
+        formDialog.setHeaderTitle("Formulario");
+        formDialog.setModal(true);
+        formDialog.setResizable(true);
+        formDialog.setWidth("800px");
+        formDialog.setHeight("600px");
         
         if (tophl != null) {
             tophl.addClassName("tophl");
@@ -117,6 +125,7 @@ public abstract class AbstractCrudView<T extends AbstractEntity> extends Div imp
         save.addClickListener(e -> onBtnSave());
         cancel.addClickListener(e -> onBtnCancel());
         delete.addClickListener(e -> onBtnDelete());
+        addButton.addClickListener(e -> openFormDialog(null));
         
         if (toggleButton != null && tophl != null) {
             toggleButton.addClickListener(event -> {
@@ -130,19 +139,47 @@ public abstract class AbstractCrudView<T extends AbstractEntity> extends Div imp
             });
         }
         
-        grid.asSingleSelect().addValueChangeListener(e -> asSingleSelect(e.getValue(), this.save));
+        grid.asSingleSelect().addValueChangeListener(e -> {
+            if (e.getValue() != null) {
+                openFormDialog(e.getValue());
+            }
+        });
     }
     
     /**
-     * Crea el layout del grid
+     * Crea el layout principal con el grid
      */
-    protected void createGridLayout(SplitLayout splitLayout) {
+    protected void createMainLayout() {
+        setSizeFull();
+        
+        VerticalLayout mainLayout = new VerticalLayout();
+        mainLayout.setSizeFull();
+        mainLayout.setPadding(false);
+        mainLayout.setSpacing(false);
+        
+        // Crear toolbar con botón agregar y filtros
+        HorizontalLayout toolbar = new HorizontalLayout();
+        toolbar.setWidthFull();
+        toolbar.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+        toolbar.setAlignItems(FlexComponent.Alignment.CENTER);
+        toolbar.setPadding(true);
+        
+        HorizontalLayout leftToolbar = new HorizontalLayout();
+        leftToolbar.add(addButton);
+        
+        HorizontalLayout rightToolbar = new HorizontalLayout();
+        if (hasFilters()) {
+            rightToolbar.add(toggleButton);
+        }
+        
+        toolbar.add(leftToolbar, rightToolbar);
+        
+        // Crear wrapper para grid y filtros
         Div wrapper = new Div();
         wrapper.setClassName("grid-wrapper");
         wrapper.setSizeFull();
         wrapper.getStyle().set("display", "flex");
         wrapper.getStyle().set("flex-direction", "column");
-        splitLayout.addToPrimary(wrapper);
         
         grid = createGrid();
         configureGrid(grid);
@@ -150,22 +187,23 @@ public abstract class AbstractCrudView<T extends AbstractEntity> extends Div imp
         if (hasFilters()) {
             tophl = createFilterLayout();
             setupFilterListeners();
-            wrapper.add(toggleButton, tophl, grid);
+            wrapper.add(tophl, grid);
         } else {
             wrapper.add(grid);
         }
+        
+        mainLayout.add(toolbar, wrapper);
+        add(mainLayout);
     }
     
     /**
-     * Crea el layout del editor
+     * Crea el dialog del formulario
      */
-    protected void createEditorLayout(SplitLayout splitLayout) {
-        Div editorLayoutDiv = new Div();
-        editorLayoutDiv.setHeightFull();
-        editorLayoutDiv.setClassName("editor-layout");
-        Div editorDiv = new Div();
-        editorDiv.setClassName("editor");
-        editorLayoutDiv.add(editorDiv);
+    protected void createFormDialog() {
+        VerticalLayout dialogLayout = new VerticalLayout();
+        dialogLayout.setPadding(false);
+        dialogLayout.setSpacing(true);
+        dialogLayout.setSizeFull();
         
         // Primero crear los campos del formulario
         configureFormLayout(formLayout);
@@ -178,19 +216,55 @@ public abstract class AbstractCrudView<T extends AbstractEntity> extends Div imp
             e.printStackTrace();
         }
         
-        editorDiv.add(formLayout);
-        createButtonLayout(editorLayoutDiv);
-        splitLayout.addToSecondary(editorLayoutDiv);
+        formLayout.setSizeFull();
+        dialogLayout.add(formLayout);
+        
+        // Crear layout de botones
+        HorizontalLayout buttonLayout = new HorizontalLayout();
+        buttonLayout.setClassName("button-layout");
+        buttonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
+        buttonLayout.add(save, cancel, delete);
+        
+        dialogLayout.add(buttonLayout);
+        formDialog.add(dialogLayout);
     }
     
     /**
-     * Crea el layout de botones
+     * Abre el dialog del formulario
      */
-    protected void createButtonLayout(Div editorLayoutDiv) {
-        HorizontalLayout buttonLayout = new HorizontalLayout();
-        buttonLayout.setClassName("button-layout");
-        buttonLayout.add(save, cancel, delete);
-        editorLayoutDiv.add(buttonLayout);
+    protected void openFormDialog(T entity) {
+        try {
+            // Si hay una entidad seleccionada, recargarla desde el servicio para asegurar fetch join
+            T entityToEdit = entity;
+            if (entity != null && entity.getId() != null) {
+                Optional<T> freshEntity = getService().get(entity.getId());
+                if (freshEntity.isPresent()) {
+                    entityToEdit = freshEntity.get();
+                } else {
+                    entityToEdit = entity;
+                }
+            }
+            
+            populateForm(entityToEdit);
+            
+            if (entityToEdit == null) {
+                formDialog.setHeaderTitle("Agregar " + getEntityName());
+                save.setText("Guardar");
+                delete.setVisible(false);
+            } else {
+                formDialog.setHeaderTitle("Editar " + getEntityName());
+                save.setText("Actualizar");
+                delete.setVisible(true);
+            }
+            
+            formDialog.open();
+            
+        } catch (Exception e) {
+            // Como fallback, intentar abrir con la entidad original
+            populateForm(entity);
+            formDialog.setHeaderTitle(entity == null ? "Agregar " + getEntityName() : "Editar " + getEntityName());
+            formDialog.open();
+        }
     }
     
     /**
@@ -248,8 +322,9 @@ public abstract class AbstractCrudView<T extends AbstractEntity> extends Div imp
             
             clearForm();
             refreshGrid();
+            formDialog.close();
+            grid.deselectAll();
             Notification.show("Datos actualizados");
-            UI.getCurrent().navigate(getViewClass());
         } catch (ObjectOptimisticLockingFailureException exception) {
             Notification n = Notification.show(
                     "Error al actualizar los datos. Alguien más actualizó el registro mientras usted hacía cambios.");
@@ -267,7 +342,8 @@ public abstract class AbstractCrudView<T extends AbstractEntity> extends Div imp
      */
     protected void onBtnCancel() {
         clearForm();
-        refreshGrid();
+        formDialog.close();
+        grid.deselectAll();
     }
     
     /**
@@ -285,8 +361,9 @@ public abstract class AbstractCrudView<T extends AbstractEntity> extends Div imp
             getService().update(this.currentEntity);
             clearForm();
             refreshGrid();
+            formDialog.close();
+            grid.deselectAll();
             Notification.show(getEntityName() + " Eliminado");
-            UI.getCurrent().navigate(getViewClass());
         } catch (ObjectOptimisticLockingFailureException exception) {
             Notification n = Notification.show(
                     "Error al Eliminar. Alguien más actualizó el registro mientras usted hacía cambios.");
@@ -298,17 +375,11 @@ public abstract class AbstractCrudView<T extends AbstractEntity> extends Div imp
     }
     
     /**
-     * Maneja la selección en el grid
+     * Maneja la selección en el grid (método legacy mantenido por compatibilidad)
      */
     protected void asSingleSelect(T entity, Button btnSave) {
-        if (entity != null) {
-            btnSave.setText("Actualizar");
-            UI.getCurrent().navigate(String.format(getEditRouteTemplate(), entity.getId()));
-        } else {
-            clearForm();
-            UI.getCurrent().navigate(getViewClass());
-            btnSave.setText("Guardar");
-        }
+        // Este método se mantiene por compatibilidad pero ya no se usa
+        // La selección se maneja directamente en setupEventListeners()
     }
     
     /**
@@ -351,7 +422,8 @@ public abstract class AbstractCrudView<T extends AbstractEntity> extends Div imp
         if (entityId.isPresent()) {
             Optional<T> entityFromBackend = getService().get(entityId.get());
             if (entityFromBackend.isPresent()) {
-                populateForm(entityFromBackend.get());
+                // En lugar de solo poblar el form, abrir el dialog
+                openFormDialog(entityFromBackend.get());
             } else {
                 Notification.show(
                         String.format("El %s solicitado no fue encontrado, ID = %s", getEntityName(), entityId.get()), 
