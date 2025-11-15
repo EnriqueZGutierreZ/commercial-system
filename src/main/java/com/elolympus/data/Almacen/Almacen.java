@@ -10,10 +10,10 @@ import java.time.LocalDateTime;
 
 
 //Constructor Vacio - get - set - equals - toString
-@EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = false, exclude = {"sucursal"})
 @Entity
 @Table(name = "almacen", schema = "almacen")
 public class Almacen extends AbstractEntity {
@@ -38,7 +38,7 @@ public class Almacen extends AbstractEntity {
     @Column(name = "activo", nullable = false)
     private Boolean activo;
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sucursal_id", nullable = false)
     private Sucursal sucursal;
 

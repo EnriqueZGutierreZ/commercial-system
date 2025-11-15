@@ -16,10 +16,10 @@ import java.util.List;
 
 
 
-@EqualsAndHashCode(callSuper = true)
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = false, exclude = {"almacenEntrega", "proveedor", "direccionProveedor", "sucursal", "detalles"})
 @Entity
 @Table(name = "orden_compra", schema = "logistica")
 public class OrdenCompra extends AbstractEntity {
@@ -44,15 +44,15 @@ public class OrdenCompra extends AbstractEntity {
     @Column(name = "activo", nullable = false)
     private Boolean activo;
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "almacen_entrega_id")
     private Almacen almacenEntrega;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "proveedor_id")
     private Persona proveedor;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "direccion_proveedor_id")
     private Direccion direccionProveedor;
 
@@ -86,7 +86,7 @@ public class OrdenCompra extends AbstractEntity {
     @Column(name = "dias_credito")
     private Integer diasCredito;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sucursal_id")
     private Sucursal sucursal;
 
@@ -96,7 +96,7 @@ public class OrdenCompra extends AbstractEntity {
     private String documento_pago;
 
     //RELACION
-    @OneToMany(mappedBy = "ordenCompra", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "ordenCompra", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<OrdenCompraDet> detalles;
 
     @PrePersist

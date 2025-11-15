@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode(callSuper = false, exclude = {"ubigeo"})
 @Entity
 @Table(name = "direccion", schema = "administracion")
 public class Direccion extends AbstractEntity {
@@ -32,7 +32,7 @@ public class Direccion extends AbstractEntity {
 //    @OneToOne(mappedBy = "direccion")
 //    private Persona persona;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ubigeo_id")
     public Ubigeo ubigeo;
     

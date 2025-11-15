@@ -6,20 +6,22 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
+import lombok.EqualsAndHashCode;
 
 import java.math.BigDecimal;
 
 @Entity
 @Table(name = "factura_detalle", schema = "ventas")
+@EqualsAndHashCode(callSuper = false, exclude = {"factura", "producto"})
 public class FacturaDetalle extends AbstractEntity {
 
     @NotNull(message = "La factura es requerida")
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "factura_id", nullable = false)
     private Factura factura;
 
     @NotNull(message = "El producto es requerido")
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "producto_id", nullable = false)
     private Producto producto;
 

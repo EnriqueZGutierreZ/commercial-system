@@ -5,6 +5,7 @@ import com.elolympus.data.Logistica.Producto;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.DecimalMin;
+import lombok.EqualsAndHashCode;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -13,15 +14,16 @@ import java.sql.Timestamp;
 @Entity
 @Table(name = "stock", schema = "almacen", 
        uniqueConstraints = @UniqueConstraint(columnNames = {"producto_id", "almacen_id"}))
+@EqualsAndHashCode(callSuper = false, exclude = {"producto", "almacen"})
 public class Stock extends AbstractEntity {
 
     @NotNull(message = "El producto es requerido")
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "producto_id", nullable = false)
     private Producto producto;
 
     @NotNull(message = "El almacén es requerido")
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "almacen_id", nullable = false)
     private Almacen almacen;
 
@@ -217,7 +219,7 @@ public class Stock extends AbstractEntity {
     public String toString() {
         return "Stock{" +
                 "producto=" + (producto != null ? producto.getNombre() : "null") +
-                ", almacen=" + (almacen != null ? almacen.getDescripcion() : "null") +
+                ", almacen=" + (almacen != null ? "Almacen-" + almacen.getId() : "null") +
                 ", stockActual=" + stockActual +
                 ", stockDisponible=" + stockDisponible +
                 ", costoPromedio=" + costoPromedio +

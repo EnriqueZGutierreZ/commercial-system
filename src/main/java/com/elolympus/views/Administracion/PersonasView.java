@@ -179,7 +179,11 @@ public class PersonasView extends AbstractCrudView<Persona> {
         txtNombres.setPlaceholder("Busqueda por Nombres");
         txtApellidos.setPlaceholder("Busqueda por Apellidos");
         
-        HorizontalLayout searchLayout = new HorizontalLayout(txtDni, txtNombres, txtApellidos);
+        // Crear botón de búsqueda
+        Button btnBuscar = new Button("BUSCAR");
+        btnBuscar.addClickListener(e -> applyFilter());
+        
+        HorizontalLayout searchLayout = new HorizontalLayout(txtDni, txtNombres, txtApellidos, btnBuscar);
         searchLayout.setAlignItems(FlexComponent.Alignment.BASELINE);
         return searchLayout;
     }

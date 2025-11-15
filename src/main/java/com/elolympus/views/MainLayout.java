@@ -206,8 +206,16 @@ public class MainLayout extends AppLayout {
         Optional<Usuario> maybeUser = authenticatedUser.get();
         if (maybeUser.isPresent()) {
             Usuario user = maybeUser.get();
+            
+            // Obtener el nombre del usuario (ahora las relaciones están pre-cargadas)
+            String nombreUsuario = "Usuario";
+            if (user.getPersona() != null && user.getPersona().getNombres() != null) {
+                nombreUsuario = user.getPersona().getNombres();
+            } else if (user.getUsuario() != null) {
+                nombreUsuario = user.getUsuario();
+            }
 
-            Avatar avatar = new Avatar(user.getPersona().getNombres());
+            Avatar avatar = new Avatar(nombreUsuario);
 //            StreamResource resource = new StreamResource("profile-pic",
 //                    () -> new ByteArrayInputStream(user.getProfilePicture()));
 //            avatar.setImageResource(resource);
@@ -220,7 +228,7 @@ public class MainLayout extends AppLayout {
             MenuItem userName = userMenu.addItem("");
             Div div = new Div();
             div.add(avatar);
-            div.add(user.getPersona().getNombres());
+            div.add(nombreUsuario);
             div.add(new Icon("lumo", "dropdown"));
             div.getElement().getStyle().set("display", "flex");
             div.getElement().getStyle().set("align-items", "center");

@@ -2,6 +2,7 @@ package com.elolympus.data.Almacen;
 
 import com.elolympus.data.AbstractEntity;
 import com.elolympus.data.Logistica.Producto;
+import jakarta.persistence.*;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -10,6 +11,7 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
+import lombok.EqualsAndHashCode;
 
 import java.math.BigDecimal;
 import java.sql.Date;
@@ -19,6 +21,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "kardex", schema = "almacen")
+@EqualsAndHashCode(callSuper = false, exclude = {"producto"})
 public class Kardex extends AbstractEntity {
     @Column(name = "orden_id")
     private Integer ordenId;
@@ -67,7 +70,7 @@ public class Kardex extends AbstractEntity {
     private BigDecimal stock;
 
     @NotNull(message = "El producto es requerido")
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "producto_id", nullable = false)
     private Producto producto;
 

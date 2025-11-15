@@ -52,22 +52,38 @@ public class PerfilUsuarioView extends VerticalLayout implements HasUrlParameter
         });
     }
     private void actualizarUsuario() {
-        Optional<Usuario> optionalUsuario = usuarioService.get(Long.parseLong(userId));
-        if (optionalUsuario.isPresent()) {
-            Usuario usuario = optionalUsuario.get();
-            // Encriptamos la nueva contraseña antes de guardar
-            String encryptedPassword = passwordUtils.encryptPassword(password.getValue());
-            usuario.setPassword(encryptedPassword);
+        try {
+            // Usar el método optimizado que carga las relaciones
+            Optional<Usuario> optionalUsuario = usuarioService.getWithRelations(Long.parseLong(userId));
+            if (optionalUsuario.isPresent()) {
+                Usuario usuario = optionalUsuario.get();
+                
+                // Encriptar la nueva contraseña si se proporcionó
+                if (password.getValue() != null && !password.getValue().trim().isEmpty()) {
+                    String encryptedPassword = passwordUtils.encryptPassword(password.getValue());
+                    usuario.setPassword(encryptedPassword);
+                }
 
-            // Actualizar otros campos si es necesario
-            usuario.getPersona().setNombres(nombre.getValue());
-            usuario.getPersona().setApellidos(apellidos.getValue());
+                // Actualizar datos de persona si existen
+                if (usuario.getPersona() != null) {
+                    usuario.getPersona().setNombres(nombre.getValue());
+                    usuario.getPersona().setApellidos(apellidos.getValue());
+                }
 
-            // Guardar el usuario actualizado
-            usuarioService.save(usuario);
-            Notification.show("Perfil actualizado correctamente.");
-        } else {
-            Notification.show("Usuario no encontrado.");
+                // Guardar el usuario actualizado
+                usuarioService.save(usuario);
+                Notification.show("Perfil actualizado correctamente.");
+                
+                // Limpiar campos de contraseña
+                password.clear();
+                confirmPassword.clear();
+            } else {
+                Notification.show("Usuario no encontrado.");
+            }
+        } catch (NumberFormatException e) {
+            Notification.show("ID de usuario inválido.");
+        } catch (Exception e) {
+            Notification.show("Error al actualizar el perfil: " + e.getMessage());
         }
     }
 
@@ -84,15 +100,24 @@ public class PerfilUsuarioView extends VerticalLayout implements HasUrlParameter
 
     private void cargarDatosUsuario() {
         if (userId != null) {
-            // Lógica para cargar datos del usuario usando el userId
-            // Por ejemplo:
-            Optional<Usuario> optionalUsuario = usuarioService.get(Long.parseLong(userId));
-            if (optionalUsuario.isPresent()) {
-                Usuario usuario = optionalUsuario.get();
-                nombre.setValue(usuario.getPersona().getNombres());
-                apellidos.setValue(usuario.getPersona().getApellidos());
+            try {
+                // Usar el método optimizado que carga las relaciones
+                Optional<Usuario> optionalUsuario = usuarioService.getWithRelations(Long.parseLong(userId));
+                if (optionalUsuario.isPresent()) {
+                    Usuario usuario = optionalUsuario.get();
+                    // Verificar que persona existe antes de acceder a sus propiedades
+                    if (usuario.getPersona() != null) {
+                        nombre.setValue(usuario.getPersona().getNombres() != null ? 
+                                      usuario.getPersona().getNombres() : "");
+                        apellidos.setValue(usuario.getPersona().getApellidos() != null ? 
+                                         usuario.getPersona().getApellidos() : "");
+                    }
+                } else {
+                    Notification.show("Usuario no encontrado");
+                }
+            } catch (NumberFormatException e) {
+                Notification.show("ID de usuario inválido");
             }
-
         }
     }
 

@@ -7,8 +7,10 @@ import com.elolympus.services.repository.UsuarioRepository;
 import com.elolympus.services.specifications.UsuarioSpecifications;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UsuarioService extends AbstractCrudService<Usuario, UsuarioRepository> {
@@ -44,6 +46,33 @@ public class UsuarioService extends AbstractCrudService<Usuario, UsuarioReposito
 
     // Métodos adicionales específicos de Usuario
     // El método count() ya está heredado de AbstractCrudService
+
+    /**
+     * Override del método findActive para usar query optimizada
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<Usuario> findActive() {
+        return repository.findAllActiveWithRelations();
+    }
+    
+    /**
+     * Obtener usuario por ID con relaciones cargadas (optimizado para perfil)
+     */
+    @Transactional(readOnly = true)
+    public Optional<Usuario> getWithRelations(Long id) {
+        return repository.findById(id)
+                .map(usuario -> {
+                    // Forzar la inicialización de las relaciones lazy dentro de la transacción
+                    if (usuario.getPersona() != null) {
+                        usuario.getPersona().getNombres(); // Inicializar proxy
+                    }
+                    if (usuario.getRol() != null) {
+                        usuario.getRol().getCargo(); // Inicializar proxy
+                    }
+                    return usuario;
+                });
+    }
 
     public List<Usuario> findAllByActivo(Boolean activo) {
         return repository.findAll(UsuarioSpecifications.conEstadoActivo(activo));

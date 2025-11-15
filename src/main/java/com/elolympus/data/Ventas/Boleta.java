@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
+import lombok.EqualsAndHashCode;
 
 import java.math.BigDecimal;
 import java.sql.Date;
@@ -14,6 +15,7 @@ import java.sql.Timestamp;
 
 @Entity
 @Table(name = "boleta", schema = "ventas")
+@EqualsAndHashCode(callSuper = false, exclude = {"cliente", "empresa"})
 public class Boleta extends AbstractEntity {
 
     @NotBlank(message = "El número de boleta es requerido")
@@ -28,12 +30,12 @@ public class Boleta extends AbstractEntity {
     private Date fechaVencimiento;
 
     @NotNull(message = "El cliente es requerido")
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cliente_id", nullable = false)
     private Persona cliente;
 
     @NotNull(message = "La empresa es requerida")
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "empresa_id", nullable = false)
     private Empresa empresa;
 

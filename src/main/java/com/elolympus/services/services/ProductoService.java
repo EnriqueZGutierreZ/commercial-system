@@ -43,6 +43,23 @@ public class ProductoService extends AbstractCrudService<Producto, ProductoRepos
     protected String getEntityName() {
         return "Producto";
     }
+    
+    /**
+     * Obtener productos activos con relaciones cargadas (optimizado para evitar N+1)
+     */
+    @Transactional(readOnly = true)
+    public java.util.List<Producto> findActiveWithRelations() {
+        return repository.findAllActiveWithRelations();
+    }
+    
+    /**
+     * Override del método findActive para usar query optimizada
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public java.util.List<Producto> findActive() {
+        return repository.findAllActiveWithRelations();
+    }
 
     @Override
     protected void copyEditableFields(Producto source, Producto target) {

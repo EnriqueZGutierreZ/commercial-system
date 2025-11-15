@@ -21,10 +21,13 @@ public class AuthenticatedUser {
         this.authenticationContext = authenticationContext;
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public Optional<Usuario> get() {
         return authenticationContext.getAuthenticatedUser(UserDetails.class)
-                .flatMap(userDetails -> usuarioRepository.findOne(UsuarioSpecifications.porUsuarioYActivo(userDetails.getUsername())));
+                .flatMap(userDetails -> {
+                    // Usar la query optimizada que carga persona y rol en una sola consulta
+                    return usuarioRepository.findByUsuarioWithRelations(userDetails.getUsername());
+                });
     }
 
     public void logout() {

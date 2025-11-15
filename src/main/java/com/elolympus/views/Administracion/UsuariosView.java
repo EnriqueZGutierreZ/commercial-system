@@ -11,6 +11,7 @@ import com.elolympus.services.services.AbstractCrudService;
 import com.elolympus.views.AbstractCrudView;
 import com.elolympus.views.MainLayout;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.UI;
@@ -33,6 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 import java.util.List;
+import java.util.Optional;
 
 @PageTitle("Usuarios")
 @Route(value = "usuario/:UsuarioID?/:action?(edit)", layout = MainLayout.class)
@@ -170,8 +172,12 @@ public class UsuariosView extends AbstractCrudView<Usuario> {
         personaBusqueda.setItems(personaService.findAll());
         personaBusqueda.addValueChangeListener(e -> applyFilter());
 
+        // Crear botón de búsqueda
+        Button btnBuscar = new Button("BUSCAR");
+        btnBuscar.addClickListener(e -> applyFilter());
+
         HorizontalLayout searchLayout = new HorizontalLayout();
-        searchLayout.add(usuarioBusqueda, rolBusqueda, personaBusqueda);
+        searchLayout.add(usuarioBusqueda, rolBusqueda, personaBusqueda, btnBuscar);
         return searchLayout;
     }
 
@@ -219,10 +225,33 @@ public class UsuariosView extends AbstractCrudView<Usuario> {
 
     @Override
     protected void populateForm(Usuario entity) {
-        super.populateForm(entity);
-        if (entity != null) {
-            savedPassword = entity.getPassword();
-            passwordField.clear();
+        try {
+            // Usar getWithRelations para cargar las relaciones necesarias
+            if (entity != null && entity.getId() != null) {
+                Optional<Usuario> usuarioWithRelations = usuarioService.getWithRelations(entity.getId());
+                if (usuarioWithRelations.isPresent()) {
+                    entity = usuarioWithRelations.get();
+                }
+            }
+            
+            super.populateForm(entity);
+            
+            if (entity != null) {
+                savedPassword = entity.getPassword();
+                passwordField.clear();
+                
+                // Asegurar que las relaciones están cargadas para los ComboBoxes
+                if (entity.getRol() != null) {
+                    rolComboBox.setValue(entity.getRol());
+                }
+                if (entity.getPersona() != null) {
+                    personaComboBox.setValue(entity.getPersona());
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("ERROR en populateForm de Usuario: " + e.getMessage());
+            e.printStackTrace();
+            Notification.show("Error al cargar los datos del usuario: " + e.getMessage());
         }
     }
 

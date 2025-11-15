@@ -5,6 +5,7 @@ import com.elolympus.data.Auxiliar.CCA;
 import com.elolympus.security.SecurityUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -17,20 +18,28 @@ import java.util.Objects;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode(callSuper = false, exclude = {"persona", "rol"})
 @Entity
 @Table(name = "usuario", schema = "administracion")
 public class Usuario extends AbstractEntity {
+    @NotBlank(message = "El nombre de usuario es obligatorio")
+    @Size(min = 3, max = 50, message = "El usuario debe tener entre 3 y 50 caracteres")
+    @Pattern(regexp = "^[a-zA-Z0-9._-]+$", message = "El usuario solo puede contener letras, números, puntos, guiones y guiones bajos")
     @Column(name = "usuario", length = 50, nullable = false)
     private String usuario;
+    
     @JsonIgnore
+    @NotBlank(message = "La contraseña es obligatoria")
+    @Size(min = 8, max = 150, message = "La contraseña debe tener al menos 8 caracteres")
     @Column(name = "password", length = 150, nullable = false)
     private String password;
 
-    @OneToOne
+    @NotNull(message = "La persona es obligatoria")
+    @OneToOne(fetch = FetchType.LAZY)
     private Persona persona;
 
-    @OneToOne
+    @NotNull(message = "El rol es obligatorio")
+    @OneToOne(fetch = FetchType.LAZY)
     private Rol rol;
     
     // Métodos necesarios para las vistas
